@@ -1,0 +1,35 @@
+.modal {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  z-index: 2;
+  width: 85vw;
+  height: 100vh;
+  background-color: #151515;
+  opacity: 0;
+  transition: opacity 0.3s, right 0.3s;
+  pointer-events: none;
+  padding-left: 20px;
+  padding-right: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.modal.active {
+  right: 0;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 95%;
+  overflow-y: auto;
+  gap: 20px;
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 0px;
+}

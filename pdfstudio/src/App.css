@@ -1,0 +1,86 @@
+.app {
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+  display: flex;
+  flex-direction: row;
+}
+
+.menu {
+  width: 15vw;
+  height: 100vh;
+  background-color: #151515;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  text-align: center;
+  height: 10vh;
+  margin-top: 20px;
+}
+
+.title-item {
+  font-size: 1.5vw;
+  color: white;
+}
+
+.categories {
+  height: 70vh;
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5vh;
+}
+
+.submit {
+  height: 20vh;
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.workspace {
+  width: 100%;
+  height: 100vh;
+  background-color: #333333;
+}
+
+.workspace p {
+  color: rgb(233, 233, 233);
+}
+
+.modalTitle {
+  text-align: right;
+  font-family: nexa_heavy;
+  font-size: 1.5vw;
+  color: white;
+}
+
+input {
+  border-radius: 5px;
+  border: 1px solid #D9D9D9;
+  padding: 5px 5px 5px 5px;
+}
+
+@font-face {
+  font-family: nexa_heavy;
+  src: url(./Font/nexa/Nexa-Heavy.ttf);
+}
+
+@font-face {
+  font-family: nexa_light;
+  src: url(./Font/nexa/Nexa-Heavy.ttf);
+}
+
+@font-face {
+  font-family: hoves;
+  src: url(./Font/tt_hoves_pro/TT\ Hoves\ Pro\ Trial\ Condensed\ Regular.ttf);
+}

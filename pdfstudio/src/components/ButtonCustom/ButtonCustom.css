@@ -1,0 +1,19 @@
+.buttonCustom {
+    background-color: #D9D9D9;
+    border: none;
+    color: black;
+    padding: 15px 0px 15px 0px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 3px;
+    width: 100%;
+    font-family: nexa_heavy, sans-serif;
+}
+
+.buttonCustom:hover {
+    background-color: #BFBFBF;
+}
+
+.buttonCustom:active {
+    background-color: #A6A6A6;
+}

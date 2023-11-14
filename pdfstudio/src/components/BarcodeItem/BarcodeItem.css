@@ -1,0 +1,49 @@
+.barcode-option {
+    height: 100px;
+    width: 100%;
+    background-color: #D9D9D9;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    font-family: nexa_heavy, sans-serif;
+}
+
+.barcode-option-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-left: 30%;
+    align-items: center;
+    gap: 10px;
+}
+
+.barcode-option-item-type, .barcode-option-item-valeur {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+}
+
+.barcode-option-item-position {
+    display: flex;
+    gap: 5px;
+}
+
+.barcode-option-item-size {
+    display: flex;
+    gap: 5px;
+}
+
+.barcode-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0px 10px 0px;
+    min-height: 100px;
+    width: 100%;
+    background-color: #272727;
+}
+
+.nobarcode {
+    fill: #151515;
+    width: 60px;
+    height: 60px;
+}

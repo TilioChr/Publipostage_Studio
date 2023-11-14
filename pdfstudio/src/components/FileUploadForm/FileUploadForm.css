@@ -1,0 +1,15 @@
+.container {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10%;
+    color: rgb(219, 219, 219);
+}
+
+.container div {
+    display: flex;
+    gap: 20px;
+}
