@@ -1,70 +1,73 @@
-# Getting Started with Create React App
+# Publipostage Studio
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Publipostage Studio is a web application that allows users to generate personalized PDF documents using templates and data from CSV files. The application is built using React.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **File Upload:** Users can upload both PDF and CSV files. The PDF file serves as a base, and the CSV file provides data for placeholders in the template.
 
-### `npm start`
+- **Item Management:**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+  - _Images:_ Users can add image items with customizable positions and sizes.
+  - _Text:_ Text items can be added with adjustable positions, sizes, and dynamic content from the CSV file.
+  - _Barcodes and QR Codes:_ Barcode items are supported, including QR codes, with customizable types and values.
+  - _Addresses:_ Users can include address items with gender, name, address lines, and more.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **PDF Generation:** The application dynamically generates a PDF document based on the provided template, replacing placeholders with data from the CSV file.
 
-### `npm test`
+## Usage
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. **File Upload:**
 
-### `npm run build`
+   - Click on the "FICHER" button to upload PDF and CSV files.
+   - The PDF file serves as the template, and the CSV file provides data for placeholders.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. **Item Management:**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+   - Use the modals for managing different types of items: Image, Barcode, Address, Text, etc.
+   - Add, update, or delete items based on your requirements.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. **PDF Generation:**
 
-### `npm run eject`
+   - Click the "GÉNÉRER" button to generate the PDF.
+   - The application will replace placeholders in the template with data from the CSV file and create a personalized PDF document.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+4. **Workspace Display:**
+   - The generated PDF will be displayed in the workspace area.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Getting Started
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. **Clone the Repository:**
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+   ```
+   git clone https://github.com/your-username/publipostage-studio.git
+   cd publipostage-studio
+   ```
 
-## Learn More
+2. **Install Dependencies:**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+   ```
+   npm install
+   ```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+3. **Run the Application:**
+   ```
+   npm start
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Code Splitting
+## Dependencies
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- React: [https://reactjs.org/](https://reactjs.org/)
+- jsPDF: [https://github.com/eKoopmans/pdfmake](https://github.com/eKoopmans/pdfmake)
+- jsBarcode: [https://lindell.me/JsBarcode/](https://lindell.me/JsBarcode/)
+- QRCode: [https://github.com/soldair/node-qrcode](https://github.com/soldair/node-qrcode)
+- PapaParse: [https://www.papaparse.com/](https://www.papaparse.com/)
 
-### Analyzing the Bundle Size
+## Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-### Making a Progressive Web App
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
