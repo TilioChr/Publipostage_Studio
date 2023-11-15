@@ -24,14 +24,15 @@ function App() {
   const [adresseItems, setAdresseItems] = useState([]); //tableau des items adresses
 
   const [pdfDataUrl, setPdfDataUrl] = useState(null); //url du pdf généré
-  /* const [selectedPdfFile, setSelectedPdfFile] = useState(null); //fichier pdf sélectionné */
+  const [selectedPdfFile, setSelectedPdfFile] = useState(null); //fichier pdf sélectionné
   const [selectedCSVFile, setSelectedCSVFile] = useState(null); //fichier csv sélectionné
   const [csvLength, setCsvLength] = useState(1); //Nombre de lignes du fichier csv
   const [csvColumn] = useState([]); //Nom des premieres colonnes du fichier csv
   const [csvData, setCsvData] = useState([]); //Données du fichier csv
+  const [isLoading, setIsLoading] = useState(false); //Etat de chargement de la generation du pdf
 
   const handlePdfFileSelect = (pdfFile) => {
-    /* setSelectedPdfFile(pdfFile); */
+    setSelectedPdfFile(pdfFile);
   }; //fonction de gestion du fichier pdf sélectionné
 
   const handleCSVFileSelect = (CSVFile) => {
@@ -60,165 +61,183 @@ function App() {
     console.log("csvData: ", csvData);
   }, [csvLength]);
 
+  // Remplace les placeholders par les valeurs du fichier csv
+  const replaceCSVPlaceholders = (text, index) => {
+    const ColumnName = csvData[0];
+    const actualRow = csvData[index];
+
+    //modifie le nom des column pour prendre en charge les accents et autre caracrères spéciaux
+    for (let i = 0; i < ColumnName.length; i++) {
+      ColumnName[i] = ColumnName[i].replace(/é/g, "&eacute;");
+      ColumnName[i] = ColumnName[i].replace(/è/g, "&egrave;");
+      ColumnName[i] = ColumnName[i].replace(/ê/g, "&ecirc;");
+      ColumnName[i] = ColumnName[i].replace(/à/g, "&agrave;");
+      ColumnName[i] = ColumnName[i].replace(/â/g, "&acirc;");
+      ColumnName[i] = ColumnName[i].replace(/ç/g, "&ccedil;");
+      ColumnName[i] = ColumnName[i].replace(/ù/g, "&ugrave;");
+      ColumnName[i] = ColumnName[i].replace(/û/g, "&ucirc;");
+      ColumnName[i] = ColumnName[i].replace(/ô/g, "&ocirc;");
+      ColumnName[i] = ColumnName[i].replace(/î/g, "&icirc;");
+      ColumnName[i] = ColumnName[i].replace(/ï/g, "&iuml;");
+      ColumnName[i] = ColumnName[i].replace(/ë/g, "&euml;");
+      ColumnName[i] = ColumnName[i].replace(/ÿ/g, "&yuml;");
+      ColumnName[i] = ColumnName[i].replace(/œ/g, "&oelig;");
+      ColumnName[i] = ColumnName[i].replace(/æ/g, "&aelig;");
+      ColumnName[i] = ColumnName[i].replace(/É/g, "&Eacute;");
+      ColumnName[i] = ColumnName[i].replace(/È/g, "&Egrave;");
+      ColumnName[i] = ColumnName[i].replace(/Ê/g, "&Ecirc;");
+      ColumnName[i] = ColumnName[i].replace(/À/g, "&Agrave;");
+      ColumnName[i] = ColumnName[i].replace(/Â/g, "&Acirc;");
+      ColumnName[i] = ColumnName[i].replace(/Ç/g, "&Ccedil;");
+      ColumnName[i] = ColumnName[i].replace(/Ù/g, "&Ugrave;");
+      ColumnName[i] = ColumnName[i].replace(/Û/g, "&Ucirc;");
+      ColumnName[i] = ColumnName[i].replace(/Ô/g, "&Ocirc;");
+      ColumnName[i] = ColumnName[i].replace(/Î/g, "&Icirc;");
+      ColumnName[i] = ColumnName[i].replace(/Ï/g, "&Iuml;");
+      ColumnName[i] = ColumnName[i].replace(/Ë/g, "&Euml;");
+      ColumnName[i] = ColumnName[i].replace(/Ÿ/g, "&Yuml;");
+      ColumnName[i] = ColumnName[i].replace(/Œ/g, "&Oelig;");
+      ColumnName[i] = ColumnName[i].replace(/Æ/g, "&Aelig;");
+    }
+    for (let i = 0; i < ColumnName.length; i++) {
+      const columnName = "|" + ColumnName[i] + "|";
+      if (text.includes(columnName)) {
+        text = text.replace(columnName, actualRow[i]);
+      }
+    }
+    return text;
+  };
+
   const generatePDF = async () => {
-    const doc = new jsPDF(); // Création du pdf
-    for (let index = 0; index < csvLength; index++) {
-      // Ajout d'une nouvelle page pour chaque itération sauf si il n'y a pas de fichier csv sélectionné
-      if (selectedCSVFile !== null && index !== 0) {
-        doc.addPage();
+    setIsLoading(true); //début du chargement
+    try {
+      const doc = new jsPDF(); // Création du pdf
+
+      for (let index = 0; index < csvLength; index++) {
+        // Ajout d'une nouvelle page pour chaque itération sauf si il n'y a pas de fichier csv sélectionné
+        if (selectedCSVFile !== null && index !== 0) {
+          doc.addPage();
+        }
+
+        if (selectedPdfFile !== null) {
+          console.log("PDF de base selectionné mais non pris en charge");
+        } // Ajout du pdf de base
+
+        const pageOffsetY = index * 297; // Décalage de la page en Y
+
+        // Ajout des textes
+        for (let i = 0; i < textInfos.length; i++) {
+          const element = textInfos[i];
+          const htmlText =
+            '<div style="width: 100%;">' +
+            replaceCSVPlaceholders(element.textValeur, index) +
+            "</div>";
+
+          // Position du texte
+          const x = parseInt(element.textX);
+          const y = parseInt(element.textY) + pageOffsetY;
+
+          // Add text to PDF synchronously
+          await new Promise((resolve) => {
+            doc.html(htmlText, {
+              x,
+              y,
+              width: parseInt(element.textLargeur),
+              callback: () => {
+                resolve();
+              },
+              windowWidth: 500,
+            });
+          });
+          console.log("texte ajouté");
+        }
+
+        // Ajout des images
+        imageInfos.forEach((element) => {
+          doc.addImage(
+            element.imagePreview,
+            "JPEG",
+            element.imageX,
+            element.imageY,
+            element.imageSize,
+            element.imageSize
+          );
+          console.log("image ajoutée");
+        });
+
+        // Ajout des barcodes
+        barcodeInfos.forEach((element) => {
+          let CB = document.createElement("canvas");
+
+          if (element.barcodeType === "QR Code") {
+            QRCode.toCanvas(
+              CB,
+              element.barcodeValeur,
+              { errorCorrectionLevel: "H" },
+              function (error) {
+                if (error) console.error(error);
+                console.log("QR Code ajouté");
+              }
+            );
+          } else {
+            JsBarcode(CB, element.barcodeValeur, {
+              format: element.barcodeType,
+            });
+          }
+
+          doc.addImage(
+            CB.toDataURL("image/jpeg"),
+            "JPEG",
+            element.barcodeX,
+            element.barcodeY,
+            element.barcodeSizeX,
+            element.barcodeSizeY
+          );
+          console.log("barcode ajouté");
+        });
+
+        // Ajout des adresses
+        adresseInfos.forEach((element) => {
+          doc.text(
+            element.adresseSexe +
+              " " +
+              element.adressePrenom +
+              " " +
+              element.adresseNom,
+            element.adresseX,
+            element.adresseY
+          );
+          doc.text(
+            element.adresseValeur,
+            element.adresseX,
+            parseInt(element.adresseY) + 5
+          );
+          doc.text(
+            element.adresseCodePostal + " " + element.adresseVille,
+            element.adresseX,
+            parseInt(element.adresseY) + 10
+          );
+          doc.text(
+            element.adressePays,
+            element.adresseX,
+            parseInt(element.adresseY) + 15
+          );
+          console.log("adresse ajoutée");
+        });
       }
 
-      const pageOffsetY = index * 297; // Décalage de la page en Y
+      // Récupération des données du PDF
+      const pdfDataUrl = doc.output("datauristring");
+      setPdfDataUrl(pdfDataUrl);
 
-      // Ajout des images
-      imageInfos.forEach((element) => {
-        doc.addImage(
-          element.imagePreview,
-          "JPEG",
-          element.imageX,
-          element.imageY,
-          element.imageSize,
-          element.imageSize
-        );
-        console.log("image ajoutée");
-      });
+      setIsLoading(false); //fin du chargement
 
-      // Ajout des barcodes
-      barcodeInfos.forEach((element) => {
-        let CB = document.createElement("canvas");
-
-        if (element.barcodeType === "QR Code") {
-          QRCode.toCanvas(
-            CB,
-            element.barcodeValeur,
-            { errorCorrectionLevel: "H" },
-            function (error) {
-              if (error) console.error(error);
-              console.log("QR Code ajouté");
-            }
-          );
-        } else {
-          JsBarcode(CB, element.barcodeValeur, {
-            format: element.barcodeType,
-          });
-        }
-
-        doc.addImage(
-          CB.toDataURL("image/jpeg"),
-          "JPEG",
-          element.barcodeX,
-          element.barcodeY,
-          element.barcodeSizeX,
-          element.barcodeSizeY
-        );
-        console.log("barcode ajouté");
-      });
-
-      // Ajout des adresses
-      adresseInfos.forEach((element) => {
-        doc.text(
-          element.adresseSexe +
-            " " +
-            element.adressePrenom +
-            " " +
-            element.adresseNom,
-          element.adresseX,
-          element.adresseY
-        );
-        doc.text(
-          element.adresseValeur,
-          element.adresseX,
-          parseInt(element.adresseY) + 5
-        );
-        doc.text(
-          element.adresseCodePostal + " " + element.adresseVille,
-          element.adresseX,
-          parseInt(element.adresseY) + 10
-        );
-        doc.text(
-          element.adressePays,
-          element.adresseX,
-          parseInt(element.adresseY) + 15
-        );
-        console.log("adresse ajoutée");
-      });
-
-      const replaceCSVPlaceholders = (text, index) => {
-        const ColumnName = csvData[0];
-        const actualRow = csvData[index];
-
-        //modifie le nom des column pour prendre en charge les accents et autre caracrères spéciaux
-        for (let i = 0; i < ColumnName.length; i++) {
-          ColumnName[i] = ColumnName[i].replace(/é/g, "&eacute;");
-          ColumnName[i] = ColumnName[i].replace(/è/g, "&egrave;");
-          ColumnName[i] = ColumnName[i].replace(/ê/g, "&ecirc;");
-          ColumnName[i] = ColumnName[i].replace(/à/g, "&agrave;");
-          ColumnName[i] = ColumnName[i].replace(/â/g, "&acirc;");
-          ColumnName[i] = ColumnName[i].replace(/ç/g, "&ccedil;");
-          ColumnName[i] = ColumnName[i].replace(/ù/g, "&ugrave;");
-          ColumnName[i] = ColumnName[i].replace(/û/g, "&ucirc;");
-          ColumnName[i] = ColumnName[i].replace(/ô/g, "&ocirc;");
-          ColumnName[i] = ColumnName[i].replace(/î/g, "&icirc;");
-          ColumnName[i] = ColumnName[i].replace(/ï/g, "&iuml;");
-          ColumnName[i] = ColumnName[i].replace(/ë/g, "&euml;");
-          ColumnName[i] = ColumnName[i].replace(/ÿ/g, "&yuml;");
-          ColumnName[i] = ColumnName[i].replace(/œ/g, "&oelig;");
-          ColumnName[i] = ColumnName[i].replace(/æ/g, "&aelig;");
-          ColumnName[i] = ColumnName[i].replace(/É/g, "&Eacute;");
-          ColumnName[i] = ColumnName[i].replace(/È/g, "&Egrave;");
-          ColumnName[i] = ColumnName[i].replace(/Ê/g, "&Ecirc;");
-          ColumnName[i] = ColumnName[i].replace(/À/g, "&Agrave;");
-          ColumnName[i] = ColumnName[i].replace(/Â/g, "&Acirc;");
-          ColumnName[i] = ColumnName[i].replace(/Ç/g, "&Ccedil;");
-          ColumnName[i] = ColumnName[i].replace(/Ù/g, "&Ugrave;");
-          ColumnName[i] = ColumnName[i].replace(/Û/g, "&Ucirc;");
-          ColumnName[i] = ColumnName[i].replace(/Ô/g, "&Ocirc;");
-          ColumnName[i] = ColumnName[i].replace(/Î/g, "&Icirc;");
-          ColumnName[i] = ColumnName[i].replace(/Ï/g, "&Iuml;");
-          ColumnName[i] = ColumnName[i].replace(/Ë/g, "&Euml;");
-          ColumnName[i] = ColumnName[i].replace(/Ÿ/g, "&Yuml;");
-          ColumnName[i] = ColumnName[i].replace(/Œ/g, "&Oelig;");
-          ColumnName[i] = ColumnName[i].replace(/Æ/g, "&Aelig;");
-        }
-
-        // Loop through each column name
-        for (let i = 0; i < ColumnName.length; i++) {
-          const columnName = "|" + ColumnName[i] + "|";
-
-          // If the text contains the column name, replace it with "WORD REPLACE"
-          if (text.includes(columnName)) {
-            text = text.replace(columnName, actualRow[i]);
-          }
-        }
-        return text;
-      };
-
-      const textPromises = textInfos.map(async (element) => {
-        const htmlText =
-          '<div style="white-space: nowrap; width: 100%;">' +
-          replaceCSVPlaceholders(element.textValeur, index) +
-          "</div>";
-        return new Promise((resolve) => {
-          doc.html(htmlText, {
-            x: element.textX,
-            y: element.textY + pageOffsetY,
-            width: element.textLargeur,
-            callback: () => {
-              resolve();
-            },
-          });
-        });
-      });
-
-      // Attendre que toutes les opérations asynchrones pour cette page soient terminées
-      await Promise.all(textPromises);
+      return doc;
+    } catch (error) {
+      console.error("Error during PDF generation:", error);
+      alert("Error during PDF generation:" + error);
+      setIsLoading(false); // Make sure to set loading state to false in case of an error
     }
-
-    // Récupération des données du PDF
-    const pdfDataUrl = doc.output("datauristring");
-    setPdfDataUrl(pdfDataUrl);
-
-    return doc;
   };
 
   //--- IMAGE ---
@@ -427,6 +446,27 @@ function App() {
 
   return (
     <div className="app">
+      {isLoading && (
+        <div className="loading-overlay">
+          <svg version="1.0" width="32px" height="32px" viewBox="0 0 128 128">
+            <script type="text/ecmascript" />
+            <g>
+              <path
+                d="M75.4 126.63a11.43 11.43 0 0 1-2.1-22.65 40.9 40.9 0 0 0 30.5-30.6 11.4 11.4 0 1 1 22.27 4.87h.02a63.77 63.77 0 0 1-47.8 48.05v-.02a11.38 11.38 0 0 1-2.93.37z"
+                fill="#d9d9d9"
+              />
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0 64 64"
+                to="360 64 64"
+                dur="1000ms"
+                repeatCount="indefinite"
+              ></animateTransform>
+            </g>
+          </svg>
+        </div>
+      )}
       <div className="menu">
         <div className="title">
           <span className="title-item">PUBLIPOSTAGE STUDIO</span>
