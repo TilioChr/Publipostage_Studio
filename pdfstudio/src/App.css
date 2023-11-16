@@ -83,6 +83,22 @@ input {
   z-index: 999;
 }
 
+.progress-bar-container {
+  width: 25%;
+  height: 20px;
+  background-color: #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0;
+  background-color: #4caf50;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
 @font-face {
   font-family: nexa_heavy;
   src: url(./Font/nexa/Nexa-Heavy.ttf);

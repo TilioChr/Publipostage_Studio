@@ -30,6 +30,12 @@ function App() {
   const [csvColumn] = useState([]); //Nom des premieres colonnes du fichier csv
   const [csvData, setCsvData] = useState([]); //Données du fichier csv
   const [isLoading, setIsLoading] = useState(false); //Etat de chargement de la generation du pdf
+  const [progress, setProgress] = useState(0); //Progression de la generation du pdf
+
+  const handleProgress = (current, total) => {
+    const percentage = (current / total) * 100;
+    setProgress(percentage);
+  };
 
   const handlePdfFileSelect = (pdfFile) => {
     setSelectedPdfFile(pdfFile);
@@ -100,15 +106,15 @@ function App() {
       ColumnName[i] = ColumnName[i].replace(/Æ/g, "&Aelig;");
     }
     for (let i = 0; i < ColumnName.length; i++) {
-      const columnName = "|" + ColumnName[i] + "|";
-      if (text.includes(columnName)) {
-        text = text.replace(columnName, actualRow[i]);
-      }
+      const columnName = new RegExp("\\|" + ColumnName[i] + "\\|", "g");
+      text = text.replace(columnName, actualRow[i]);
     }
+
     return text;
   };
 
   const generatePDF = async () => {
+    console.time("PDF generation time");
     setIsLoading(true); //début du chargement
     try {
       const doc = new jsPDF(); // Création du pdf
@@ -125,11 +131,15 @@ function App() {
 
         const pageOffsetY = index * 297; // Décalage de la page en Y
 
-        // Ajout des textes
+        //-------------------------------------------
+
+        // Ajout des textes traditionnels
         for (let i = 0; i < textInfos.length; i++) {
           const element = textInfos[i];
           const htmlText =
-            '<div style="width: 100%;">' +
+            "<div style = 'width:" +
+            element.textLargeur +
+            "px'" +
             replaceCSVPlaceholders(element.textValeur, index) +
             "</div>";
 
@@ -142,15 +152,17 @@ function App() {
             doc.html(htmlText, {
               x,
               y,
-              width: parseInt(element.textLargeur),
               callback: () => {
                 resolve();
               },
-              windowWidth: 500,
             });
           });
           console.log("texte ajouté");
         }
+
+        //-------------------------------------------
+
+        //-------------------------------------------
 
         // Ajout des images
         imageInfos.forEach((element) => {
@@ -224,13 +236,15 @@ function App() {
           );
           console.log("adresse ajoutée");
         });
+        handleProgress(index + 1, csvLength); // Mise à jour de la barre de progression
       }
 
       // Récupération des données du PDF
       const pdfDataUrl = doc.output("datauristring");
       setPdfDataUrl(pdfDataUrl);
-
       setIsLoading(false); //fin du chargement
+      handleProgress(0, csvLength);
+      console.timeEnd("PDF generation time");
 
       return doc;
     } catch (error) {
@@ -448,23 +462,12 @@ function App() {
     <div className="app">
       {isLoading && (
         <div className="loading-overlay">
-          <svg version="1.0" width="32px" height="32px" viewBox="0 0 128 128">
-            <script type="text/ecmascript" />
-            <g>
-              <path
-                d="M75.4 126.63a11.43 11.43 0 0 1-2.1-22.65 40.9 40.9 0 0 0 30.5-30.6 11.4 11.4 0 1 1 22.27 4.87h.02a63.77 63.77 0 0 1-47.8 48.05v-.02a11.38 11.38 0 0 1-2.93.37z"
-                fill="#d9d9d9"
-              />
-              <animateTransform
-                attributeName="transform"
-                type="rotate"
-                from="0 64 64"
-                to="360 64 64"
-                dur="1000ms"
-                repeatCount="indefinite"
-              ></animateTransform>
-            </g>
-          </svg>
+          <div className="progress-bar-container">
+            <div
+              className="progress-bar"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
         </div>
       )}
       <div className="menu">

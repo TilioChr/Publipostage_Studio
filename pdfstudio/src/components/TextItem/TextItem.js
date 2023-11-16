@@ -110,11 +110,10 @@ function TextItem({ onTextChange, csvColumn }) {
           apiKey="jj2151nw7rk0ng0umtf8ofo3dvblxd5bqym5gxcv7x5ujig5"
           init={{
             toolbar:
-              "undo redo | formatselect | bold italic underline | backcolor forecolor | fontfamily fontsizeinput | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+              "undo redo | formatselect | bold italic underline | backcolor forecolor | fontfamily fontsizeinput lineheight | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
             plugins: [
               "autoresize",
               "wordcount",
-              "emoticons",
               "lists",
               "insertdatetime",
               "table",
@@ -122,6 +121,8 @@ function TextItem({ onTextChange, csvColumn }) {
               "help",
             ],
             resize: true,
+            line_height_formats:
+              "0em 0.1em 0.2em 0.3em 0.4em 0.5em 0.6em 0.7em 0.8em 0.9em 1em 1.2em 1.5em 1.8em 2em",
           }}
           value={textValeur}
           onEditorChange={handleTextValeurChange}
@@ -139,7 +140,7 @@ function TextItem({ onTextChange, csvColumn }) {
                 <div
                   key={index}
                   draggable
-                  onDragStart={(e) => handleDragStart(e, item)}
+                  onDragStart={(e) => handleDragStart(e, "|" + item + "|")}
                 >
                   {item}
                 </div>
