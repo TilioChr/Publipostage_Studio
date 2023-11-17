@@ -4,10 +4,11 @@ import { Editor } from "@tinymce/tinymce-react";
 import "./TextItem.css";
 
 function TextItem({ onTextChange, csvColumn }) {
-  const [textX, setTextX] = useState(0); // Etat pour stocker la valeur de la position X
-  const [textY, setTextY] = useState(0); // Etat pour stocker la valeur de la position Y
+  const [textX, setTextX] = useState(10); // Etat pour stocker la valeur de la position X
+  const [textY, setTextY] = useState(10); // Etat pour stocker la valeur de la position Y
   const [textLargeur, setTextLargeur] = useState(210); // Etat pour stocker la valeur de la largeur
   const [textValeur, setTextValeur] = useState("Write here..."); // Etat pour stocker la valeur du texte
+  const [textStyle, setTextStyle] = useState(false); // Etat pour stocker la valeur du style
 
   const handleDragStart = (event, columnName) => {
     event.dataTransfer.setData("text/plain", columnName);
@@ -27,6 +28,7 @@ function TextItem({ onTextChange, csvColumn }) {
       textY,
       textLargeur,
       textValeur: updatedText,
+      textStyle,
     });
   };
 
@@ -38,6 +40,7 @@ function TextItem({ onTextChange, csvColumn }) {
       textY,
       textLargeur,
       textValeur,
+      textStyle,
     });
   }; // Fonction pour mettre à jour la valeur de la position X
 
@@ -49,6 +52,7 @@ function TextItem({ onTextChange, csvColumn }) {
       textY: textY,
       textLargeur,
       textValeur,
+      textStyle,
     });
   }; // Fonction pour mettre à jour la valeur de la position Y
 
@@ -60,6 +64,7 @@ function TextItem({ onTextChange, csvColumn }) {
       textY,
       textLargeur: textLargeur,
       textValeur,
+      textStyle,
     });
   }; // Fonction pour mettre à jour la valeur de la largeur
 
@@ -71,8 +76,21 @@ function TextItem({ onTextChange, csvColumn }) {
       textY,
       textLargeur,
       textValeur: textValeur,
+      textStyle,
     });
   }; // Fonction pour mettre à jour la valeur du texte
+
+  const handleTextStyleChange = (event) => {
+    const textStyle = event.target.checked;
+    setTextStyle(textStyle);
+    onTextChange({
+      textX,
+      textY,
+      textLargeur,
+      textValeur,
+      textStyle: textStyle,
+    });
+  }; // Fonction pour mettre à jour la valeur du style
 
   return (
     <div className="text">
@@ -102,6 +120,15 @@ function TextItem({ onTextChange, csvColumn }) {
             onChange={handleTextLargeurChange}
             value={textLargeur}
             name="TextLargeur"
+          ></input>
+        </div>
+        <div className="text-option-item">
+          <span>Style (slower)</span>
+          <input
+            type="checkbox"
+            onChange={handleTextStyleChange}
+            value={textStyle}
+            name="textStyle"
           ></input>
         </div>
       </div>

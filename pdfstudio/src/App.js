@@ -37,6 +37,15 @@ function App() {
     setProgress(percentage);
   };
 
+  const handleRunExecutable = () => {
+    fetch("http://localhost:3001/runExecutable")
+      .then((response) => response.text())
+      .then((data) => console.log(data))
+      .catch((error) => console.error("Erreur lors de la demande", error));
+
+    console.log("Executable lancé");
+  };
+
   const handlePdfFileSelect = (pdfFile) => {
     setSelectedPdfFile(pdfFile);
   }; //fonction de gestion du fichier pdf sélectionné
@@ -131,39 +140,6 @@ function App() {
 
         const pageOffsetY = index * 297; // Décalage de la page en Y
 
-        //-------------------------------------------
-
-        // Ajout des textes traditionnels
-        for (let i = 0; i < textInfos.length; i++) {
-          const element = textInfos[i];
-          const htmlText =
-            "<div style = 'width:" +
-            element.textLargeur +
-            "px'" +
-            replaceCSVPlaceholders(element.textValeur, index) +
-            "</div>";
-
-          // Position du texte
-          const x = parseInt(element.textX);
-          const y = parseInt(element.textY) + pageOffsetY;
-
-          // Add text to PDF synchronously
-          await new Promise((resolve) => {
-            doc.html(htmlText, {
-              x,
-              y,
-              callback: () => {
-                resolve();
-              },
-            });
-          });
-          console.log("texte ajouté");
-        }
-
-        //-------------------------------------------
-
-        //-------------------------------------------
-
         // Ajout des images
         imageInfos.forEach((element) => {
           doc.addImage(
@@ -208,6 +184,44 @@ function App() {
           console.log("barcode ajouté");
         });
 
+        // Ajout des textes
+        for (let i = 0; i < textInfos.length; i++) {
+          const element = textInfos[i];
+
+          if (element.textStyle === false) {
+            //si le texte n'est pas en html
+            // replace placeholders with csv data
+            let htmlText = replaceCSVPlaceholders(element.textValeur, index);
+            //delete everything between '<' and '>'
+            htmlText = htmlText.replace(/<[^>]*>?/gm, "");
+            doc.text(htmlText, element.textX, element.textY);
+            console.log("texte ajouté");
+          } else {
+            //si le texte est en html
+            const htmlText =
+              "<div style = 'width:" +
+              element.textLargeur +
+              "px'>" +
+              replaceCSVPlaceholders(element.textValeur, index) +
+              "</div>";
+
+            // Position du texte
+            const x = parseInt(element.textX);
+            const y = parseInt(element.textY) + pageOffsetY;
+            // Add text to PDF synchronously
+            await new Promise((resolve) => {
+              doc.html(htmlText, {
+                x,
+                y,
+                callback: () => {
+                  resolve();
+                },
+              });
+            });
+            console.log("texte ajouté");
+          }
+        }
+
         // Ajout des adresses
         adresseInfos.forEach((element) => {
           doc.text(
@@ -236,6 +250,7 @@ function App() {
           );
           console.log("adresse ajoutée");
         });
+
         handleProgress(index + 1, csvLength); // Mise à jour de la barre de progression
       }
 
@@ -332,6 +347,7 @@ function App() {
           textInfo.textY = newTextInfo.textY;
           textInfo.textLargeur = newTextInfo.textLargeur;
           textInfo.textValeur = newTextInfo.textValeur;
+          textInfo.textStyle = newTextInfo.textStyle;
           found = true;
         }
       });
@@ -505,6 +521,7 @@ function App() {
         </div>
         <div className="submit">
           <ButtonCustom onClick={generatePDF}>GÉNÉRER</ButtonCustom>
+          <ButtonCustom onClick={handleRunExecutable}>EXECUTER</ButtonCustom>
         </div>
       </div>
       <div className="workspace">
