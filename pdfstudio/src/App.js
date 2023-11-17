@@ -142,13 +142,23 @@ function App() {
 
         // Ajout des images
         imageInfos.forEach((element) => {
+          const img = new Image();
+          img.src = element.imagePreview;
+          const width = img.width;
+          const height = img.height;
+          const aspectRatio = width / height;
+          const imageSizeInPixels =
+            (element.imageSize / 100) * doc.internal.pageSize.getWidth();
+          const newHeight = imageSizeInPixels / aspectRatio;
+          console.log("imageSizeInPixels: ", imageSizeInPixels);
+          console.log("newHeight: ", newHeight);
           doc.addImage(
             element.imagePreview,
             "JPEG",
             element.imageX,
             element.imageY,
-            element.imageSize,
-            element.imageSize
+            imageSizeInPixels,
+            newHeight
           );
           console.log("image ajoutée");
         });

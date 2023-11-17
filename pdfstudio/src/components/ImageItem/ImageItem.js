@@ -73,7 +73,7 @@ const ImageItem = ({ onImageChange }) => {
     <div className="image">
       <div className="image-option">
         <div className="image-option-item">
-          <span>Taille</span>
+          <span>Taille (%)</span>
           <input
             name="ImageSize"
             type="number"
@@ -83,7 +83,7 @@ const ImageItem = ({ onImageChange }) => {
         </div>
         <div className="image-option-item"></div>
         <div className="image-option-item">
-          <span>Position</span>
+          <span>Position (mm)</span>
           <div className="image-option-item-position">
             <input
               name="ImageX"
