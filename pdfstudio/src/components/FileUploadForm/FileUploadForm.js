@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import csv from "csvtojson";
 import xmlBuilder from "xmlbuilder";
 import FileSaver from "file-saver";
+import axios from "axios";
 import "./FileUploadForm.css";
 
 function FileUploadForm(props) {
   const [file, setFile] = useState(null);
-  const [pdfFile, setPdfFile] = useState(null);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -18,7 +18,6 @@ function FileUploadForm(props) {
 
   const handlePdfFileChange = (event) => {
     const selectedPdfFile = event.target.files[0];
-    setPdfFile(selectedPdfFile);
     if (props.onPdfFileSelect) {
       props.onPdfFileSelect(selectedPdfFile);
     }
@@ -38,14 +37,27 @@ function FileUploadForm(props) {
 
   const handleSubmit = async () => {
     if (file) {
-      const fileContent = await readFile(file);
-      const jsonData = await csv().fromString(fileContent);
-      const xmlData = convertToXML(jsonData);
-      const blob = new Blob([xmlData], { type: "text/xml" });
-      FileSaver.saveAs(blob, "output.xml");
-      alert("Super, c'est converti !");
-    } else {
-      alert("Veuillez sélectionner un fichier CSV.");
+      const fileContent = await readFile(file); // lecture du fichier CSV
+      const fileName = file.name;
+      //si fileName contient ".csv" alors
+      if (fileName.includes(".csv")) {
+        const jsonData = await csv().fromString(fileContent); // convertion du fichier CSV en objet JSON
+        const xmlData = convertToXML(jsonData); // convertion du fichier JSON en XML
+        const response = await axios.post("http://localhost:3001/importXML", {
+          xml: xmlData,
+        });
+        console.log(response.data);
+      }
+      //sinon si il ne contient pa ".xml" alors
+      else if (fileName.includes(".xml")) {
+        const xmlData = fileContent;
+        const response = await axios.post("http://localhost:3001/importXML", {
+          xml: xmlData,
+        });
+        console.log(response.data);
+      } else {
+        alert("Veuillez sélectionner un fichier valide.");
+      }
     }
   };
 
@@ -77,19 +89,19 @@ function FileUploadForm(props) {
     return root.end({ pretty: true });
   };
 
-  const sendToText = () => {
+  /*   const sendToText = () => {
     if (file) {
       console.log("file", file);
     } else {
       alert("Veuillez sélectionner un fichier CSV.");
     }
-  };
+  }; */
 
   return (
     <div className="container">
       <div>
         <input type="file" onChange={handleFileChange} accept=".csv" />
-        {/* <button onClick={handleSubmit}>Convertir en XML</button> */}
+        <button onClick={handleSubmit}>Valider</button>
       </div>
       <div>
         <span>PDF d'origine</span>

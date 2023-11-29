@@ -8,6 +8,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@tinymce/tinymce-react": "^4.3.0",
+    "axios": "^1.6.2",
     "csvtojson": "^2.0.10",
     "file-saver": "^2.0.5",
     "fs": "^0.0.1-security",

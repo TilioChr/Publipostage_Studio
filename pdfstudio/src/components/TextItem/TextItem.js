@@ -144,7 +144,6 @@ function TextItem({ onTextChange, csvColumn }) {
               "lists",
               "insertdatetime",
               "table",
-              "paste",
               "help",
             ],
             resize: true,

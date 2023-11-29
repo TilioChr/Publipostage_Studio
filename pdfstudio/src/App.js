@@ -10,6 +10,7 @@ import TextItem from "./components/TextItem/TextItem";
 import AdresseItem from "./components/AdresseItem/AdresseItem";
 import JsBarcode from "jsbarcode";
 import Papa from "papaparse";
+import axios from "axios";
 const QRCode = require("qrcode");
 
 function App() {
@@ -23,7 +24,6 @@ function App() {
   const [barcodeItems, setBarcodeItems] = useState([]); //tableau des items barcodes
   const [adresseItems, setAdresseItems] = useState([]); //tableau des items adresses
 
-  const [pdfDataUrl, setPdfDataUrl] = useState(null); //url du pdf généré
   const [selectedPdfFile, setSelectedPdfFile] = useState(null); //fichier pdf sélectionné
   const [selectedCSVFile, setSelectedCSVFile] = useState(null); //fichier csv sélectionné
   const [csvLength, setCsvLength] = useState(1); //Nombre de lignes du fichier csv
@@ -31,19 +31,11 @@ function App() {
   const [csvData, setCsvData] = useState([]); //Données du fichier csv
   const [isLoading, setIsLoading] = useState(false); //Etat de chargement de la generation du pdf
   const [progress, setProgress] = useState(0); //Progression de la generation du pdf
+  const [pdfUrl, setPdfUrl] = useState("");
 
   const handleProgress = (current, total) => {
     const percentage = (current / total) * 100;
     setProgress(percentage);
-  };
-
-  const handleRunExecutable = () => {
-    fetch("http://localhost:3001/runExecutable")
-      .then((response) => response.text())
-      .then((data) => console.log(data))
-      .catch((error) => console.error("Erreur lors de la demande", error));
-
-    console.log("Executable lancé");
   };
 
   const handlePdfFileSelect = (pdfFile) => {
@@ -74,7 +66,7 @@ function App() {
   useEffect(() => {
     console.log("csvLength updated:", csvLength);
     console.log("csvData: ", csvData);
-  }, [csvLength]);
+  }, [csvData, csvLength]);
 
   // Remplace les placeholders par les valeurs du fichier csv
   const replaceCSVPlaceholders = (text, index) => {
@@ -122,7 +114,8 @@ function App() {
     return text;
   };
 
-  const generatePDF = async () => {
+  // Genere via jsPDF (useless)
+  /* const generatePDF = async () => {
     console.time("PDF generation time");
     setIsLoading(true); //début du chargement
     try {
@@ -150,8 +143,6 @@ function App() {
           const imageSizeInPixels =
             (element.imageSize / 100) * doc.internal.pageSize.getWidth();
           const newHeight = imageSizeInPixels / aspectRatio;
-          console.log("imageSizeInPixels: ", imageSizeInPixels);
-          console.log("newHeight: ", newHeight);
           doc.addImage(
             element.imagePreview,
             "JPEG",
@@ -205,7 +196,7 @@ function App() {
             //delete everything between '<' and '>'
             htmlText = htmlText.replace(/<[^>]*>?/gm, "");
             doc.text(htmlText, element.textX, element.textY);
-            console.log("texte ajouté");
+            //console.log("texte ajouté");
           } else {
             //si le texte est en html
             const htmlText =
@@ -228,7 +219,7 @@ function App() {
                 },
               });
             });
-            console.log("texte ajouté");
+            //console.log("texte ajouté");
           }
         }
 
@@ -266,7 +257,7 @@ function App() {
 
       // Récupération des données du PDF
       const pdfDataUrl = doc.output("datauristring");
-      setPdfDataUrl(pdfDataUrl);
+      setPdfUrl(pdfDataUrl);
       setIsLoading(false); //fin du chargement
       handleProgress(0, csvLength);
       console.timeEnd("PDF generation time");
@@ -276,6 +267,67 @@ function App() {
       console.error("Error during PDF generation:", error);
       alert("Error during PDF generation:" + error);
       setIsLoading(false); // Make sure to set loading state to false in case of an error
+    }
+  }; */
+
+  // Genere via Impress
+  const handleRunExecutable = async () => {
+    const response = await axios.get("http://localhost:3001/deleteContent"); //reset du dff
+
+    const urlBackend = "http://localhost:3001/completDFF"; //chemin vers la fonction backend
+
+    //add text
+    for (let i = 0; i < textInfos.length; i++) {
+      const element = textInfos[i];
+      const formatElement =
+        '<div style="position:absolute;top:' +
+        element.textY +
+        "mm;left:" +
+        element.textX +
+        "mm;width:" +
+        element.textLargeur +
+        'mm">' +
+        element.textValeur +
+        "</div>";
+      const textJson = { type: "text", message: formatElement };
+      const response = await axios.post(urlBackend, textJson);
+      console.log(response.data);
+    }
+
+    //add image
+    for (let i = 0; i < imageInfos.length; i++) {
+      const element = imageInfos[i];
+      const response = await axios.post(urlBackend, {
+        type: "image",
+        image: element.imagePreview,
+        imageX: element.imageX,
+        imageY: element.imageY,
+        imageSize: element.imageSize,
+      });
+    }
+
+    //add barcode
+    for (let i = 0; i < barcodeInfos.length; i++) {
+      const element = barcodeInfos[i];
+      console.log(
+        "Ici c'est complexe il faut se renseigner sur le fonctionnement des barcodes"
+      );
+    }
+
+    //generation et affichage du pdf
+    try {
+      const response = await axios.get("http://localhost:3001/runExecutable", {
+        responseType: "blob",
+      });
+
+      const pdfBlob = new Blob([response.data], {
+        type: "application/pdf",
+      });
+      const url = URL.createObjectURL(pdfBlob);
+
+      setPdfUrl(url);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du fichier PDF", error);
     }
   };
 
@@ -530,14 +582,14 @@ function App() {
           </Modal>
         </div>
         <div className="submit">
-          <ButtonCustom onClick={generatePDF}>GÉNÉRER</ButtonCustom>
+          {/* <ButtonCustom onClick={generatePDF}>GÉNÉRER</ButtonCustom> */}
           <ButtonCustom onClick={handleRunExecutable}>EXECUTER</ButtonCustom>
         </div>
       </div>
       <div className="workspace">
-        {pdfDataUrl ? (
+        {pdfUrl ? (
           <embed
-            src={pdfDataUrl}
+            src={pdfUrl}
             width="100%"
             height="100%"
             type="application/pdf"
