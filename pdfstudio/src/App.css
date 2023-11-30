@@ -83,6 +83,11 @@ input {
   z-index: 999;
 }
 
+.loading-overlay-spinner {
+  width: 50px;
+  height: 50px;
+}
+
 .progress-bar-container {
   width: 25%;
   height: 20px;

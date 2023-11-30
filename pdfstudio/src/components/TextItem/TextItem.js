@@ -7,7 +7,7 @@ function TextItem({ onTextChange, csvColumn }) {
   const [textX, setTextX] = useState(10); // Etat pour stocker la valeur de la position X
   const [textY, setTextY] = useState(10); // Etat pour stocker la valeur de la position Y
   const [textLargeur, setTextLargeur] = useState(210); // Etat pour stocker la valeur de la largeur
-  const [textValeur, setTextValeur] = useState("Write here..."); // Etat pour stocker la valeur du texte
+  const [textValeur, setTextValeur] = useState(""); // Etat pour stocker la valeur du texte
   const [textStyle, setTextStyle] = useState(false); // Etat pour stocker la valeur du style
 
   const handleDragStart = (event, columnName) => {
@@ -80,7 +80,7 @@ function TextItem({ onTextChange, csvColumn }) {
     });
   }; // Fonction pour mettre à jour la valeur du texte
 
-  const handleTextStyleChange = (event) => {
+  /*   const handleTextStyleChange = (event) => {
     const textStyle = event.target.checked;
     setTextStyle(textStyle);
     onTextChange({
@@ -90,7 +90,7 @@ function TextItem({ onTextChange, csvColumn }) {
       textValeur,
       textStyle: textStyle,
     });
-  }; // Fonction pour mettre à jour la valeur du style
+  }; // Fonction pour mettre à jour la valeur du style */
 
   return (
     <div className="text">
@@ -122,7 +122,7 @@ function TextItem({ onTextChange, csvColumn }) {
             name="TextLargeur"
           ></input>
         </div>
-        <div className="text-option-item">
+        {/* <div className="text-option-item">
           <span>Style (slower)</span>
           <input
             type="checkbox"
@@ -130,7 +130,7 @@ function TextItem({ onTextChange, csvColumn }) {
             value={textStyle}
             name="textStyle"
           ></input>
-        </div>
+        </div> */}
       </div>
       <div className="text-editor">
         <Editor
@@ -146,6 +146,7 @@ function TextItem({ onTextChange, csvColumn }) {
               "table",
               "help",
             ],
+            placeholder: "Write your text here...",
             resize: true,
             line_height_formats:
               "0em 0.1em 0.2em 0.3em 0.4em 0.5em 0.6em 0.7em 0.8em 0.9em 1em 1.2em 1.5em 1.8em 2em",

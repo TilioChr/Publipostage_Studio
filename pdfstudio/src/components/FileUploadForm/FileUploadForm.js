@@ -47,6 +47,7 @@ function FileUploadForm(props) {
           xml: xmlData,
         });
         console.log(response.data);
+        alert("SUCCESS !");
       }
       //sinon si il ne contient pa ".xml" alors
       else if (fileName.includes(".xml")) {
@@ -55,8 +56,9 @@ function FileUploadForm(props) {
           xml: xmlData,
         });
         console.log(response.data);
+        alert("SUCCESS !");
       } else {
-        alert("Veuillez sélectionner un fichier valide.");
+        alert("ERROR !");
       }
     }
   };

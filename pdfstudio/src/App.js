@@ -4,16 +4,17 @@ import ButtonCustom from "./components/ButtonCustom/ButtonCustom.js";
 import Modal from "./components/Modal/Modal";
 import ImageItem from "./components/ImageItem/ImageItem";
 import FileUploadForm from "./components/FileUploadForm/FileUploadForm";
-import jsPDF from "jspdf";
 import BarcodeItem from "./components/BarcodeItem/BarcodeItem";
 import TextItem from "./components/TextItem/TextItem";
 import AdresseItem from "./components/AdresseItem/AdresseItem";
-import JsBarcode from "jsbarcode";
 import Papa from "papaparse";
 import axios from "axios";
+import JsBarcode from "jsbarcode";
+/* import jsPDF from "jspdf"; */
 const QRCode = require("qrcode");
 
 function App() {
+  //#region STATES
   const [imageInfos, setImageInfos] = useState([]); //tableau des informations images
   const [textInfos, setTextInfos] = useState([]); //tableau des informations textes
   const [barcodeInfos, setBarcodeInfos] = useState([]); //tableau des informations barcodes
@@ -32,44 +33,17 @@ function App() {
   const [isLoading, setIsLoading] = useState(false); //Etat de chargement de la generation du pdf
   const [progress, setProgress] = useState(0); //Progression de la generation du pdf
   const [pdfUrl, setPdfUrl] = useState("");
+  //#endregion STATES
 
-  const handleProgress = (current, total) => {
+  //#region DEAD FUNCTIONS
+  // Barre de progression
+  /* const handleProgress = (current, total) => {
     const percentage = (current / total) * 100;
     setProgress(percentage);
-  };
-
-  const handlePdfFileSelect = (pdfFile) => {
-    setSelectedPdfFile(pdfFile);
-  }; //fonction de gestion du fichier pdf sélectionné
-
-  const handleCSVFileSelect = (CSVFile) => {
-    setSelectedCSVFile(CSVFile);
-    console.log("CSV file selected:", CSVFile);
-
-    Papa.parse(CSVFile, {
-      complete: function (results) {
-        csvColumn.push(results.data[0]);
-        console.log("csvColumn: ", csvColumn);
-        setCsvLength(results.data.length);
-      },
-    });
-
-    //collecting the data from the csv file and storing it in the csvData array
-    Papa.parse(CSVFile, {
-      complete: function (results) {
-        console.log("Finished:", results.data);
-        setCsvData(results.data);
-      },
-    });
-  };
-
-  useEffect(() => {
-    console.log("csvLength updated:", csvLength);
-    console.log("csvData: ", csvData);
-  }, [csvData, csvLength]);
+  }; */
 
   // Remplace les placeholders par les valeurs du fichier csv
-  const replaceCSVPlaceholders = (text, index) => {
+  /* const replaceCSVPlaceholders = (text, index) => {
     const ColumnName = csvData[0];
     const actualRow = csvData[index];
 
@@ -112,7 +86,7 @@ function App() {
     }
 
     return text;
-  };
+  }; */
 
   // Genere via jsPDF (useless)
   /* const generatePDF = async () => {
@@ -269,6 +243,37 @@ function App() {
       setIsLoading(false); // Make sure to set loading state to false in case of an error
     }
   }; */
+  //#endregion DEAD FUNCTIONS
+
+  const handlePdfFileSelect = (pdfFile) => {
+    setSelectedPdfFile(pdfFile);
+  }; //fonction de gestion du fichier pdf sélectionné
+
+  const handleCSVFileSelect = (CSVFile) => {
+    setSelectedCSVFile(CSVFile);
+    console.log("CSV file selected:", CSVFile);
+
+    Papa.parse(CSVFile, {
+      complete: function (results) {
+        csvColumn.push(results.data[0]);
+        console.log("csvColumn: ", csvColumn);
+        setCsvLength(results.data.length);
+      },
+    });
+
+    //collecting the data from the csv file and storing it in the csvData array
+    Papa.parse(CSVFile, {
+      complete: function (results) {
+        console.log("Finished:", results.data);
+        setCsvData(results.data);
+      },
+    });
+  }; //parsing du csv à sa selection pour les nom de column dans textItem
+
+  useEffect(() => {
+    console.log("csvLength updated:", csvLength);
+    console.log("csvData: ", csvData);
+  }, [csvData, csvLength]); // mise à jour de csvLength et csvData
 
   // Genere via Impress
   const handleRunExecutable = async () => {
@@ -291,7 +296,7 @@ function App() {
         "</div>";
       const textJson = { type: "text", message: formatElement };
       const response = await axios.post(urlBackend, textJson);
-      console.log(response.data);
+      console.log("text : ", response.data);
     }
 
     //add image
@@ -304,21 +309,56 @@ function App() {
         imageY: element.imageY,
         imageSize: element.imageSize,
       });
+      console.log("image : ", response.data);
     }
 
     //add barcode
     for (let i = 0; i < barcodeInfos.length; i++) {
       const element = barcodeInfos[i];
-      console.log(
-        "Ici c'est complexe il faut se renseigner sur le fonctionnement des barcodes"
-      );
+      if (element.barcodeType === "QR Code") {
+        //Si c'est un QRCODE
+        const qrCodeCanvas = document.createElement("canvas");
+        await QRCode.toCanvas(qrCodeCanvas, element.barcodeValeur);
+        const qrCodePreview = qrCodeCanvas.toDataURL();
+        const response = await axios.post(urlBackend, {
+          type: "barcode",
+          barcode: qrCodePreview,
+          barcodeX: element.barcodeX,
+          barcodeY: element.barcodeY,
+          barcodeSizeX: element.barcodeSizeX,
+          barcodeSizeY: element.barcodeSizeY,
+        });
+        console.log("barcode : ", response.data);
+      } else {
+        // Si c'est un code-barres
+        const barcodeCanvas = document.createElement("canvas"); // Crée un canvas
+        JsBarcode(barcodeCanvas, element.barcodeValeur, {
+          format: element.barcodeType,
+        });
+        const barcodePreview = barcodeCanvas.toDataURL(); // Obtenez l'URL de l'image du canvas
+        const response = await axios.post(urlBackend, {
+          type: "barcode",
+          barcode: barcodePreview,
+          barcodeX: element.barcodeX,
+          barcodeY: element.barcodeY,
+          barcodeSizeX: element.barcodeSizeX,
+          barcodeSizeY: element.barcodeSizeY,
+        });
+        console.log("barcode : ", response.data);
+      }
     }
 
     //generation et affichage du pdf
     try {
+      //afficher le chargement
+      setIsLoading(true);
+
       const response = await axios.get("http://localhost:3001/runExecutable", {
         responseType: "blob",
       });
+
+      //cacher le chargement
+      setIsLoading(false);
 
       const pdfBlob = new Blob([response.data], {
         type: "application/pdf",
@@ -331,6 +371,7 @@ function App() {
     }
   };
 
+  //#region ITEMS
   //--- IMAGE ---
   const addImageItem = () => {
     const key = Date.now().toString(); //genere une clé unique
@@ -535,16 +576,55 @@ function App() {
     });
   }; //fonction de suppression d'un item adresse
   //-------------
+  //#endregion ITEMS
 
   return (
     <div className="app">
       {isLoading && (
         <div className="loading-overlay">
-          <div className="progress-bar-container">
-            <div
-              className="progress-bar"
-              style={{ width: `${progress}%` }}
-            ></div>
+          <div className="loading-overlay-spinner">
+            <svg
+              version="1.1"
+              id="L6"
+              xmlns="http://www.w3.org/2000/svg"
+              x="0px"
+              y="0px"
+              viewBox="0 0 100 100"
+              enable-background="new 0 0 100 100"
+            >
+              <rect
+                fill="none"
+                stroke="#fff"
+                stroke-width="4"
+                x="25"
+                y="25"
+                width="50"
+                height="50"
+              >
+                <animateTransform
+                  attributeName="transform"
+                  dur="0.5s"
+                  from="0 50 50"
+                  to="180 50 50"
+                  type="rotate"
+                  id="strokeBox"
+                  attributeType="XML"
+                  begin="rectBox.end"
+                />
+              </rect>
+              <rect x="27" y="27" fill="#fff" width="46" height="50">
+                <animate
+                  attributeName="height"
+                  dur="1.3s"
+                  attributeType="XML"
+                  from="50"
+                  to="0"
+                  id="rectBox"
+                  fill="freeze"
+                  begin="0s;strokeBox.end"
+                />
+              </rect>
+            </svg>
           </div>
         </div>
       )}

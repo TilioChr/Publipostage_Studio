@@ -120,7 +120,7 @@ const BarcodeItem = ({ onBarcodeChange }) => {
     <div className="barcode">
       <div className="barcode-option">
         <div className="barcode-option-item">
-          <span>Taille</span>
+          <span>Taille (L, H)</span>
           <div className="barcode-option-item-size">
             <input
               name="barcodeSizeX"
