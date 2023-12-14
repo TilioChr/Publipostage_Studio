@@ -3,15 +3,37 @@ import "./BarcodeItem.css";
 import JsBarcode from "jsbarcode";
 import QRCode from "qrcode.react";
 
-const BarcodeItem = ({ onBarcodeChange }) => {
-  const [barcodeValeur, setbarcodeValeur] = useState(""); // État pour stocker la source du barcode
-  const [barcodeSizeX, setbarcodeSizeX] = useState(0); // État pour stocker la taille du barcode
-  const [barcodeSizeY, setbarcodeSizeY] = useState(0); // État pour stocker la taille du barcode
-  const [barcodeX, setBarcodeX] = useState(0); // État pour stocker la position X du barcode
-  const [barcodeY, setBarcodeY] = useState(0); // État pour stocker la position Y du barcode
-  const [barcodeType, setBarcodeType] = useState("CODE128"); // Type de code-barres par défaut
+const BarcodeItem = ({ onBarcodeChange, uniqueKey, onDelete }) => {
+  const localStorageKey = `barcodeItem_${uniqueKey}`;
+  const [barcodeValeur, setbarcodeValeur] = useState(() => {
+    const storedBarcodeValeur = localStorage.getItem(
+      `${localStorageKey}_valeur`
+    );
+    return storedBarcodeValeur || "";
+  }); // État pour stocker la valeur du barcode
+  const [barcodeSizeX, setbarcodeSizeX] = useState(() => {
+    const storedBarcodeSizeX = localStorage.getItem(`${localStorageKey}_sizeX`);
+    return storedBarcodeSizeX ? parseInt(storedBarcodeSizeX) : 100;
+  }); // État pour stocker la taille du barcode
+  const [barcodeSizeY, setbarcodeSizeY] = useState(() => {
+    const storedBarcodeSizeY = localStorage.getItem(`${localStorageKey}_sizeY`);
+    return storedBarcodeSizeY ? parseInt(storedBarcodeSizeY) : 100;
+  }); // État pour stocker la taille du barcode
+  const [barcodeX, setBarcodeX] = useState(() => {
+    const storedBarcodeX = localStorage.getItem(`${localStorageKey}_x`);
+    return storedBarcodeX ? parseInt(storedBarcodeX) : 0;
+  }); // État pour stocker la position X du barcode
+  const [barcodeY, setBarcodeY] = useState(() => {
+    const storedBarcodeY = localStorage.getItem(`${localStorageKey}_y`);
+    return storedBarcodeY ? parseInt(storedBarcodeY) : 0;
+  }); // État pour stocker la position Y du barcode
+  const [barcodeType, setBarcodeType] = useState(() => {
+    const storedBarcodeType = localStorage.getItem(`${localStorageKey}_type`);
+    return storedBarcodeType || "CODE128";
+  }); // État pour stocker le type du barcode
   const [errorMessage, setErrorMessage] = useState(""); // État pour stocker les messages d'erreur
   const svgRef = useRef(null); // Référence à l'élément SVG
+  const [showParameters, setShowParameters] = useState(true); // Etat pour stocker la valeur de la visibilité des paramètres
 
   useEffect(() => {
     setErrorMessage(""); // Effacer les erreurs
@@ -49,6 +71,7 @@ const BarcodeItem = ({ onBarcodeChange }) => {
       barcodeY,
       barcodeType,
     });
+    localStorage.setItem(`${localStorageKey}_valeur`, barcode);
   };
 
   const handleTypeChange = (event) => {
@@ -62,6 +85,7 @@ const BarcodeItem = ({ onBarcodeChange }) => {
       barcodeY,
       barcodeType: type,
     });
+    localStorage.setItem(`${localStorageKey}_type`, type);
   };
 
   const handlebarcodeSizeXChange = (event) => {
@@ -75,6 +99,7 @@ const BarcodeItem = ({ onBarcodeChange }) => {
       barcodeY,
       barcodeType,
     });
+    localStorage.setItem(`${localStorageKey}_sizeX`, sizeX.toString());
   };
 
   const handlebarcodeSizeYChange = (event) => {
@@ -88,6 +113,7 @@ const BarcodeItem = ({ onBarcodeChange }) => {
       barcodeY,
       barcodeType,
     });
+    localStorage.setItem(`${localStorageKey}_sizeY`, sizeY.toString());
   };
 
   const handleBarcodeXChange = (event) => {
@@ -101,6 +127,7 @@ const BarcodeItem = ({ onBarcodeChange }) => {
       barcodeY,
       barcodeType,
     });
+    localStorage.setItem(`${localStorageKey}_x`, positionX.toString());
   };
 
   const handleBarcodeYChange = (event) => {
@@ -114,14 +141,59 @@ const BarcodeItem = ({ onBarcodeChange }) => {
       barcodeX,
       barcodeType,
     });
+    localStorage.setItem(`${localStorageKey}_y`, positionY.toString());
   };
+
+  const handleDelete = () => {
+    onDelete(uniqueKey);
+  }; // Fonction pour supprimer l'element
+
+  const toggleParametersVisibility = () => {
+    setShowParameters((prevShowParameters) => !prevShowParameters);
+  }; // Fonction pour afficher ou masquer les paramètres
 
   return (
     <div className="barcode">
-      <div className="barcode-option">
+      <div className="top">
+        <div
+          className="hidden-show-button"
+          onClick={toggleParametersVisibility}
+        >
+          {showParameters ? (
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="m0 0h24v24h-24z" fill="#fff" opacity="0" />
+              <g fill="#231f20">
+                <path d="m21.87 11.5c-.64-1.11-4.16-6.68-10.14-6.5-5.53.14-8.73 5-9.6 6.5a1 1 0 0 0 0 1c.63 1.09 4 6.5 9.89 6.5h.25c5.53-.14 8.74-5 9.6-6.5a1 1 0 0 0 0-1zm-9.65 5.5c-4.31.1-7.12-3.59-8-5 1-1.61 3.61-4.9 7.61-5 4.29-.11 7.11 3.59 8 5-1.03 1.61-3.61 4.9-7.61 5z" />
+                <path d="m12 8.5a3.5 3.5 0 1 0 3.5 3.5 3.5 3.5 0 0 0 -3.5-3.5zm0 5a1.5 1.5 0 1 1 1.5-1.5 1.5 1.5 0 0 1 -1.5 1.5z" />
+              </g>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="m0 0h24v24h-24z" fill="#fff" opacity="0" />
+              <g fill="#231f20">
+                <path d="m4.71 3.29a1 1 0 0 0 -1.42 1.42l5.63 5.63a3.5 3.5 0 0 0 4.74 4.74l5.63 5.63a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42zm7.29 10.21a1.5 1.5 0 0 1 -1.5-1.5s0-.05 0-.07l1.56 1.56z" />
+                <path d="m12.22 17c-4.3.1-7.12-3.59-8-5a13.7 13.7 0 0 1 2.24-2.72l-1.46-1.41a15.89 15.89 0 0 0 -2.87 3.63 1 1 0 0 0 0 1c.63 1.09 4 6.5 9.89 6.5h.25a9.48 9.48 0 0 0 3.23-.67l-1.58-1.58a7.74 7.74 0 0 1 -1.7.25z" />
+                <path d="m21.87 11.5c-.64-1.11-4.17-6.68-10.14-6.5a9.48 9.48 0 0 0 -3.23.67l1.58 1.58a7.74 7.74 0 0 1 1.7-.25c4.29-.11 7.11 3.59 8 5a13.7 13.7 0 0 1 -2.29 2.72l1.51 1.41a15.89 15.89 0 0 0 2.91-3.63 1 1 0 0 0 -.04-1z" />
+              </g>
+            </svg>
+          )}
+        </div>
+        <div className="delete-button" onClick={handleDelete}>
+          <svg
+            viewBox="0 0 512 512"
+            width="512"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="m289.94 256 95-95a24 24 0 0 0 -33.94-34l-95 95-95-95a24 24 0 0 0 -34 34l95 95-95 95a24 24 0 1 0 34 34l95-95 95 95a24 24 0 0 0 34-34z" />
+          </svg>
+        </div>
+      </div>
+      <div
+        className={`barcode-option${showParameters ? "-visible" : "-hidden"}`}
+      >
         <div className="barcode-option-item">
           <span>Taille (L, H)</span>
-          <div className="barcode-option-item-size">
+          <div className="barcode-option-item-dual">
             <input
               name="barcodeSizeX"
               type="number"
@@ -136,24 +208,9 @@ const BarcodeItem = ({ onBarcodeChange }) => {
             />
           </div>
         </div>
-        <div className="barcode-option-item-type">
-          <span>Type</span>
-          <select onChange={handleTypeChange} value={barcodeType}>
-            <option>CODABAR</option>
-            <option>CODE128</option>
-            <option>CODE39</option>
-            <option>EAN5</option>
-            <option>EAN8</option>
-            <option>UPC</option>
-            <option>ITF</option>
-            <option>MSI10</option>
-            <option>PHARMACODE</option>
-            <option>QR Code</option>
-          </select>
-        </div>
         <div className="barcode-option-item">
           <span>Position</span>
-          <div className="barcode-option-item-position">
+          <div className="barcode-option-item-dual">
             <input
               name="barcodeX"
               type="number"
@@ -168,11 +225,30 @@ const BarcodeItem = ({ onBarcodeChange }) => {
             />
           </div>
         </div>
-        <div className="barcode-option-item-valeur">
+        <div className="barcode-option-item">
+          <span>Type</span>
+          <select onChange={handleTypeChange} value={barcodeType}>
+            <option>CODABAR</option>
+            <option>CODE128</option>
+            <option>CODE39</option>
+            <option>EAN5</option>
+            <option>EAN8</option>
+            <option>UPC</option>
+            <option>ITF</option>
+            <option>MSI10</option>
+            <option>PHARMACODE</option>
+            <option>QR Code</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="valeur">
+        <div className="barcode-option-item">
           <span>Valeur </span>
           <input
             name="barcodeValeur"
             type="text"
+            value={barcodeValeur}
             onChange={handleBarcodeChange}
           />
         </div>
@@ -182,7 +258,7 @@ const BarcodeItem = ({ onBarcodeChange }) => {
         {barcodeType === "QR Code" && barcodeValeur.length <= 800 ? (
           <QRCode value={barcodeValeur} level="H" />
         ) : barcodeValeur ? (
-          <svg ref={svgRef}></svg>
+          <svg className="barcode-preview-img" ref={svgRef}></svg>
         ) : (
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -1,23 +1,43 @@
-.text-option {
+.text-option-visible,
+.text-option-hidden {
   display: flex;
+  flex-direction: column;
+  padding: 10px;
   justify-content: space-evenly;
   padding-bottom: 10px;
   padding-top: 10px;
-  border-style: solid;
   border-width: 3px 3px 0px 3px;
-  border-color: rgb(83, 83, 83);
-  border-radius: 12px 12px 0px 0px;
+  background-color: #d9d9d9;
+  font-family: nexa_heavy, sans-serif;
+}
+
+.text-value-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  justify-content: space-evenly;
+  padding-bottom: 10px;
+  padding-top: 10px;
+  border-width: 3px 3px 0px 3px;
+  border-radius: 0px 0px 5px 5px;
+  background-color: #d9d9d9;
+  font-family: nexa_heavy, sans-serif;
+}
+
+.text-option-visible {
+  display: flex;
+}
+
+.text-option-hidden {
+  display: none;
 }
 
 .text-option-item {
-  color: white;
+  color: black;
 }
 
-.text-option-item input {
-  background-color: rgb(41, 41, 41);
-  border-style: solid;
-  border-color: rgb(83, 83, 83);
-  color: white;
+.text-option-item-input {
+  display: flex;
 }
 
 .text-editor {
@@ -57,4 +77,58 @@
 
 .nameColumnContent::-webkit-scrollbar {
   display: none;
+}
+
+.top {
+  width: 100%;
+  display: flex;
+  justify-content: right;
+  background-color: #d9d9d9;
+  border-radius: 5px 5px 0px 0px;
+}
+
+.delete-button,
+.hidden-show-button {
+  display: flex;
+  width: 30px;
+  height: auto;
+}
+
+/* ----------------------------------- */
+
+.editeur-modal {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.349);
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+}
+
+.editeur-modal-wrapper {
+  display: flex;
+}
+
+.expand {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-radius: 0px 5px 5px 0px;
+}
+
+.custom-input {
+  border-radius: 5px 0px 0px 5px;
+}
+
+.expand-icon {
+  height: 20px;
+  width: 20px;
+  cursor: pointer;
 }

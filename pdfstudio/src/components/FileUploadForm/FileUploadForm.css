@@ -1,15 +1,34 @@
 .container {
-    height: 100vh;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 10%;
-    color: rgb(219, 219, 219);
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10%;
+  color: rgb(219, 219, 219);
 }
 
 .container div {
-    display: flex;
-    gap: 20px;
+  display: flex;
+  width: 80%;
+  gap: 20px;
+}
+
+.valid-icon {
+  height: 4vh;
+  fill: green;
+  margin-right: -50%;
+}
+
+.invalid-icon {
+  height: 4vh;
+  margin-right: -50%;
+  fill: rgb(199, 0, 0);
+}
+
+.datafile,
+.pdffile {
+  display: flex;
+  align-items: center;
 }

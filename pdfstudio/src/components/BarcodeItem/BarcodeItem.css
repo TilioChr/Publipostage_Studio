@@ -1,49 +1,61 @@
-.barcode-option {
-    height: 100px;
-    width: 100%;
-    background-color: #D9D9D9;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    font-family: nexa_heavy, sans-serif;
+.barcode-option-hidden,
+.barcode-option-visible {
+  height: 100%;
+  width: 100%;
+  background-color: #d9d9d9;
+  display: flex;
+  flex-direction: column;
+  font-family: nexa_heavy, sans-serif;
+}
+
+.barcode-option-visible {
+  display: flex;
+}
+
+.barcode-option-hidden {
+  display: none;
 }
 
 .barcode-option-item {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    margin-left: 30%;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
 }
 
-.barcode-option-item-type, .barcode-option-item-valeur {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 40px;
+.barcode-option-item-dual {
+  display: flex;
+  gap: 5px;
 }
 
-.barcode-option-item-position {
-    display: flex;
-    gap: 5px;
+input {
+  width: 95%;
 }
 
-.barcode-option-item-size {
-    display: flex;
-    gap: 5px;
+.valeur {
+  height: 100%;
+  width: 100%;
+  background-color: #d9d9d9;
+  display: flex;
+  flex-direction: column;
+  font-family: nexa_heavy, sans-serif;
 }
 
 .barcode-preview {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 0px 10px 0px;
-    min-height: 100px;
-    width: 100%;
-    background-color: #272727;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0px 10px 0px;
+  min-height: 100px;
+  width: 100%;
+  background-color: #272727;
+}
+
+.barcode-preview-img {
+  max-width: 18vw;
 }
 
 .nobarcode {
-    fill: #151515;
-    width: 60px;
-    height: 60px;
+  fill: #151515;
+  width: 60px;
+  height: 60px;
 }

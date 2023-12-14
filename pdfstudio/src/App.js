@@ -1,7 +1,6 @@
 import "./App.css";
 import React, { useState, useEffect } from "react";
 import ButtonCustom from "./components/ButtonCustom/ButtonCustom.js";
-import Modal from "./components/Modal/Modal";
 import ImageItem from "./components/ImageItem/ImageItem";
 import FileUploadForm from "./components/FileUploadForm/FileUploadForm";
 import BarcodeItem from "./components/BarcodeItem/BarcodeItem";
@@ -10,7 +9,7 @@ import AdresseItem from "./components/AdresseItem/AdresseItem";
 import Papa from "papaparse";
 import axios from "axios";
 import JsBarcode from "jsbarcode";
-/* import jsPDF from "jspdf"; */
+import Modal from "./components/Modal/Modal";
 const QRCode = require("qrcode");
 
 function App() {
@@ -31,219 +30,10 @@ function App() {
   const [csvColumn] = useState([]); //Nom des premieres colonnes du fichier csv
   const [csvData, setCsvData] = useState([]); //Données du fichier csv
   const [isLoading, setIsLoading] = useState(false); //Etat de chargement de la generation du pdf
-  const [progress, setProgress] = useState(0); //Progression de la generation du pdf
-  const [pdfUrl, setPdfUrl] = useState("");
+  const [pdfUrl, setPdfUrl] = useState(""); //URL du pdf généré
+  const [selectedElementType, setSelectedElementType] = useState(null); //Type d'élément sélectionné
+  const [windowSelect, setWindowSelect] = useState("composition"); //Etat de la fenetre de composition
   //#endregion STATES
-
-  //#region DEAD FUNCTIONS
-  // Barre de progression
-  /* const handleProgress = (current, total) => {
-    const percentage = (current / total) * 100;
-    setProgress(percentage);
-  }; */
-
-  // Remplace les placeholders par les valeurs du fichier csv
-  /* const replaceCSVPlaceholders = (text, index) => {
-    const ColumnName = csvData[0];
-    const actualRow = csvData[index];
-
-    //modifie le nom des column pour prendre en charge les accents et autre caracrères spéciaux
-    for (let i = 0; i < ColumnName.length; i++) {
-      ColumnName[i] = ColumnName[i].replace(/é/g, "&eacute;");
-      ColumnName[i] = ColumnName[i].replace(/è/g, "&egrave;");
-      ColumnName[i] = ColumnName[i].replace(/ê/g, "&ecirc;");
-      ColumnName[i] = ColumnName[i].replace(/à/g, "&agrave;");
-      ColumnName[i] = ColumnName[i].replace(/â/g, "&acirc;");
-      ColumnName[i] = ColumnName[i].replace(/ç/g, "&ccedil;");
-      ColumnName[i] = ColumnName[i].replace(/ù/g, "&ugrave;");
-      ColumnName[i] = ColumnName[i].replace(/û/g, "&ucirc;");
-      ColumnName[i] = ColumnName[i].replace(/ô/g, "&ocirc;");
-      ColumnName[i] = ColumnName[i].replace(/î/g, "&icirc;");
-      ColumnName[i] = ColumnName[i].replace(/ï/g, "&iuml;");
-      ColumnName[i] = ColumnName[i].replace(/ë/g, "&euml;");
-      ColumnName[i] = ColumnName[i].replace(/ÿ/g, "&yuml;");
-      ColumnName[i] = ColumnName[i].replace(/œ/g, "&oelig;");
-      ColumnName[i] = ColumnName[i].replace(/æ/g, "&aelig;");
-      ColumnName[i] = ColumnName[i].replace(/É/g, "&Eacute;");
-      ColumnName[i] = ColumnName[i].replace(/È/g, "&Egrave;");
-      ColumnName[i] = ColumnName[i].replace(/Ê/g, "&Ecirc;");
-      ColumnName[i] = ColumnName[i].replace(/À/g, "&Agrave;");
-      ColumnName[i] = ColumnName[i].replace(/Â/g, "&Acirc;");
-      ColumnName[i] = ColumnName[i].replace(/Ç/g, "&Ccedil;");
-      ColumnName[i] = ColumnName[i].replace(/Ù/g, "&Ugrave;");
-      ColumnName[i] = ColumnName[i].replace(/Û/g, "&Ucirc;");
-      ColumnName[i] = ColumnName[i].replace(/Ô/g, "&Ocirc;");
-      ColumnName[i] = ColumnName[i].replace(/Î/g, "&Icirc;");
-      ColumnName[i] = ColumnName[i].replace(/Ï/g, "&Iuml;");
-      ColumnName[i] = ColumnName[i].replace(/Ë/g, "&Euml;");
-      ColumnName[i] = ColumnName[i].replace(/Ÿ/g, "&Yuml;");
-      ColumnName[i] = ColumnName[i].replace(/Œ/g, "&Oelig;");
-      ColumnName[i] = ColumnName[i].replace(/Æ/g, "&Aelig;");
-    }
-    for (let i = 0; i < ColumnName.length; i++) {
-      const columnName = new RegExp("\\|" + ColumnName[i] + "\\|", "g");
-      text = text.replace(columnName, actualRow[i]);
-    }
-
-    return text;
-  }; */
-
-  // Genere via jsPDF (useless)
-  /* const generatePDF = async () => {
-    console.time("PDF generation time");
-    setIsLoading(true); //début du chargement
-    try {
-      const doc = new jsPDF(); // Création du pdf
-
-      for (let index = 0; index < csvLength; index++) {
-        // Ajout d'une nouvelle page pour chaque itération sauf si il n'y a pas de fichier csv sélectionné
-        if (selectedCSVFile !== null && index !== 0) {
-          doc.addPage();
-        }
-
-        if (selectedPdfFile !== null) {
-          console.log("PDF de base selectionné mais non pris en charge");
-        } // Ajout du pdf de base
-
-        const pageOffsetY = index * 297; // Décalage de la page en Y
-
-        // Ajout des images
-        imageInfos.forEach((element) => {
-          const img = new Image();
-          img.src = element.imagePreview;
-          const width = img.width;
-          const height = img.height;
-          const aspectRatio = width / height;
-          const imageSizeInPixels =
-            (element.imageSize / 100) * doc.internal.pageSize.getWidth();
-          const newHeight = imageSizeInPixels / aspectRatio;
-          doc.addImage(
-            element.imagePreview,
-            "JPEG",
-            element.imageX,
-            element.imageY,
-            imageSizeInPixels,
-            newHeight
-          );
-          console.log("image ajoutée");
-        });
-
-        // Ajout des barcodes
-        barcodeInfos.forEach((element) => {
-          let CB = document.createElement("canvas");
-
-          if (element.barcodeType === "QR Code") {
-            QRCode.toCanvas(
-              CB,
-              element.barcodeValeur,
-              { errorCorrectionLevel: "H" },
-              function (error) {
-                if (error) console.error(error);
-                console.log("QR Code ajouté");
-              }
-            );
-          } else {
-            JsBarcode(CB, element.barcodeValeur, {
-              format: element.barcodeType,
-            });
-          }
-
-          doc.addImage(
-            CB.toDataURL("image/jpeg"),
-            "JPEG",
-            element.barcodeX,
-            element.barcodeY,
-            element.barcodeSizeX,
-            element.barcodeSizeY
-          );
-          console.log("barcode ajouté");
-        });
-
-        // Ajout des textes
-        for (let i = 0; i < textInfos.length; i++) {
-          const element = textInfos[i];
-
-          if (element.textStyle === false) {
-            //si le texte n'est pas en html
-            // replace placeholders with csv data
-            let htmlText = replaceCSVPlaceholders(element.textValeur, index);
-            //delete everything between '<' and '>'
-            htmlText = htmlText.replace(/<[^>]*>?/gm, "");
-            doc.text(htmlText, element.textX, element.textY);
-            //console.log("texte ajouté");
-          } else {
-            //si le texte est en html
-            const htmlText =
-              "<div style = 'width:" +
-              element.textLargeur +
-              "px'>" +
-              replaceCSVPlaceholders(element.textValeur, index) +
-              "</div>";
-
-            // Position du texte
-            const x = parseInt(element.textX);
-            const y = parseInt(element.textY) + pageOffsetY;
-            // Add text to PDF synchronously
-            await new Promise((resolve) => {
-              doc.html(htmlText, {
-                x,
-                y,
-                callback: () => {
-                  resolve();
-                },
-              });
-            });
-            //console.log("texte ajouté");
-          }
-        }
-
-        // Ajout des adresses
-        adresseInfos.forEach((element) => {
-          doc.text(
-            element.adresseSexe +
-              " " +
-              element.adressePrenom +
-              " " +
-              element.adresseNom,
-            element.adresseX,
-            element.adresseY
-          );
-          doc.text(
-            element.adresseValeur,
-            element.adresseX,
-            parseInt(element.adresseY) + 5
-          );
-          doc.text(
-            element.adresseCodePostal + " " + element.adresseVille,
-            element.adresseX,
-            parseInt(element.adresseY) + 10
-          );
-          doc.text(
-            element.adressePays,
-            element.adresseX,
-            parseInt(element.adresseY) + 15
-          );
-          console.log("adresse ajoutée");
-        });
-
-        handleProgress(index + 1, csvLength); // Mise à jour de la barre de progression
-      }
-
-      // Récupération des données du PDF
-      const pdfDataUrl = doc.output("datauristring");
-      setPdfUrl(pdfDataUrl);
-      setIsLoading(false); //fin du chargement
-      handleProgress(0, csvLength);
-      console.timeEnd("PDF generation time");
-
-      return doc;
-    } catch (error) {
-      console.error("Error during PDF generation:", error);
-      alert("Error during PDF generation:" + error);
-      setIsLoading(false); // Make sure to set loading state to false in case of an error
-    }
-  }; */
-  //#endregion DEAD FUNCTIONS
 
   const handlePdfFileSelect = (pdfFile) => {
     setSelectedPdfFile(pdfFile);
@@ -278,6 +68,7 @@ function App() {
   // Genere via Impress
   const handleRunExecutable = async () => {
     const response = await axios.get("http://localhost:3001/deleteContent"); //reset du dff
+    console.log("deleteContent : ", response.data);
 
     const urlBackend = "http://localhost:3001/completDFF"; //chemin vers la fonction backend
 
@@ -348,6 +139,45 @@ function App() {
       }
     }
 
+    //add adresse
+    for (let i = 0; i < adresseInfos.length; i++) {
+      const element = adresseInfos[i];
+      const structureSections = element.adresseStructure.split("|");
+      const addressLines = [];
+      structureSections.forEach((section) => {
+        const parts = section.split("-");
+        const line = parts
+          .map((part) => element["adresse" + part.trim()])
+          .join("");
+        addressLines.push(line);
+      });
+      const formatElement =
+        '<div style="position:absolute; font-size:' +
+        element.adresseSize +
+        "px;top:" +
+        element.adresseY +
+        "mm;left:" +
+        element.adresseX +
+        'mm;width:210mm">' +
+        "<span>" +
+        addressLines.join("<br></br>") +
+        "</span>" +
+        "</div>";
+      const adresseJson = { type: "text", message: formatElement };
+      const response = await axios.post(urlBackend, adresseJson);
+      console.log("adresse : ", response.data);
+    }
+
+    //pdf background
+    /* if (1 === 1) {
+      const pdfBackground = { type: "pdf", pdf: selectedPdfFile };
+      const response = await axios.post(
+        "http://localhost:3001/setBackground",
+        pdfBackground
+      );
+      console.log("pdfBackground : ", response.data);
+    } */
+
     //generation et affichage du pdf
     try {
       //afficher le chargement
@@ -371,93 +201,85 @@ function App() {
     }
   };
 
+  const handleElementTypeSelect = (elementType) => {
+    setSelectedElementType(elementType);
+    console.log("elementType: ", elementType);
+  }; //fonction de gestion du type d'élément sélectionné
+
+  const handleWindowSelect = (windowType) => {
+    setWindowSelect(windowType);
+  }; //fonction de gestion de la fenetre de composition
+
   //#region ITEMS
   //--- IMAGE ---
   const addImageItem = () => {
-    const key = Date.now().toString(); //genere une clé unique
-    setImageItems([
-      ...imageItems,
+    const key = Date.now().toString(); // Generate a unique key
+    setImageItems((prevImageItems) => [
+      ...prevImageItems,
       <div key={key}>
         <ImageItem
-          key={key}
+          uniqueKey={key}
           onImageChange={(newImageInfo) => updateImageInfo(newImageInfo, key)}
+          onDelete={deleteImageItem}
         />
-        <ButtonCustom onClick={() => deleteImageItem(key)}>
-          Supprimer
-        </ButtonCustom>
       </div>,
     ]);
-  }; //fonction d'ajout d'un item image
+  }; // fonction d'ajout d'un item image
 
   const updateImageInfo = (newImageInfo, key) => {
-    newImageInfo.key = key;
-    let found = false;
-    if (imageInfos.length === 0) {
-      imageInfos.push(newImageInfo);
-    } else {
-      imageInfos.forEach((imageInfo) => {
-        if (imageInfo.key === key) {
-          imageInfo.imagePreview = newImageInfo.imagePreview;
-          imageInfo.imageSize = newImageInfo.imageSize;
-          imageInfo.imageX = newImageInfo.imageX;
-          imageInfo.imageY = newImageInfo.imageY;
-          found = true;
-        }
-      });
-      if (!found) {
-        imageInfos.push(newImageInfo);
+    setImageInfos((prevImageInfos) => {
+      const index = prevImageInfos.findIndex(
+        (imageInfo) => imageInfo.key === key
+      );
+
+      if (index !== -1) {
+        const updatedInfos = [...prevImageInfos];
+        updatedInfos[index] = { ...updatedInfos[index], ...newImageInfo };
+        return updatedInfos;
+      } else {
+        return [...prevImageInfos, { key, ...newImageInfo }];
       }
-    }
-  }; //fonction de mise à jour des informations d'une image
+    });
+  }; // fonction de mise à jour des informations d'une image
 
   const deleteImageItem = (key) => {
-    setImageItems((prevImageItems) => {
-      return prevImageItems.filter((item) => item.key !== key);
-    });
-    setImageInfos((prevImageInfos) => {
-      return prevImageInfos.filter((item) => item.key !== key);
-    });
-  }; //fonction de suppression d'un item image
+    setImageItems((prevImageItems) =>
+      prevImageItems.filter((item) => item.key !== key)
+    );
+    setImageInfos((prevImageInfos) =>
+      prevImageInfos.filter((item) => item.key !== key)
+    );
+  }; // fonction de suppression d'un item image
   //------------
 
   //--- TEXT ---
   const addTextItem = () => {
     const key = Date.now().toString(); //genere une clé unique
-    setTextItems([
-      ...textItems,
+    setTextItems((prevTextItems) => [
+      ...prevTextItems,
       <div key={key}>
         <TextItem
-          key={key}
+          uniqueKey={key}
           onTextChange={(newTextInfo) => updateTextInfo(newTextInfo, key)}
           csvColumn={csvColumn}
+          onDelete={deleteTextItem}
         />
-        <ButtonCustom onClick={() => deleteTextItem(key)}>
-          Supprimer
-        </ButtonCustom>
       </div>,
     ]);
   }; //fonction d'ajout d'un item texte
 
   const updateTextInfo = (newTextInfo, key) => {
-    newTextInfo.key = key;
-    let found = false;
-    if (textInfos.length === 0) {
-      textInfos.push(newTextInfo);
-    } else {
-      textInfos.forEach((textInfo) => {
-        if (textInfo.key === key) {
-          textInfo.textX = newTextInfo.textX;
-          textInfo.textY = newTextInfo.textY;
-          textInfo.textLargeur = newTextInfo.textLargeur;
-          textInfo.textValeur = newTextInfo.textValeur;
-          textInfo.textStyle = newTextInfo.textStyle;
-          found = true;
-        }
-      });
-      if (!found) {
-        textInfos.push(newTextInfo);
+    setTextInfos((prevTextInfos) => {
+      const index = prevTextInfos.findIndex((textInfo) => textInfo.key === key);
+
+      if (index !== -1) {
+        const updatedInfos = [...prevTextInfos];
+        updatedInfos[index] = { ...updatedInfos[index], ...newTextInfo };
+        return updatedInfos;
+      } else {
+        return [...prevTextInfos, { key, ...newTextInfo }];
       }
-    }
+    });
   }; //fonction de mise à jour des informations d'un texte
 
   const deleteTextItem = (key) => {
@@ -473,44 +295,35 @@ function App() {
   //-- BARCODE --
   const addBarcodeItem = () => {
     const key = Date.now().toString(); //genere une clé unique
-    setBarcodeItems([
-      ...barcodeItems,
+    setBarcodeItems((prevBarcodeItems) => [
+      ...prevBarcodeItems,
       <div key={key}>
         <BarcodeItem
-          key={key}
+          uniqueKey={key}
           onBarcodeChange={(newBarcodeInfo) =>
             updateBarcodeInfo(newBarcodeInfo, key)
           }
+          onDelete={deleteBarcodeItem}
         />
-        <ButtonCustom onClick={() => deleteBarcodeItem(key)}>
-          Supprimer
-        </ButtonCustom>
       </div>,
     ]);
   }; //fonction d'ajout d'un item barcode
 
   const updateBarcodeInfo = (newBarcodeInfo, key) => {
-    newBarcodeInfo.key = key;
-    let found = false;
-    if (barcodeInfos.length === 0) {
-      barcodeInfos.push(newBarcodeInfo);
-    } else {
-      barcodeInfos.forEach((barcodeInfo) => {
-        if (barcodeInfo.key === key) {
-          barcodeInfo.barcodeSizeX = newBarcodeInfo.barcodeSizeX;
-          barcodeInfo.barcodeSizeY = newBarcodeInfo.barcodeSizeY;
-          barcodeInfo.barcodeX = newBarcodeInfo.barcodeX;
-          barcodeInfo.barcodeY = newBarcodeInfo.barcodeY;
-          barcodeInfo.barcodeType = newBarcodeInfo.barcodeType;
-          barcodeInfo.barcodeValeur = newBarcodeInfo.barcodeValeur;
-          found = true;
-        }
-      });
-      if (!found) {
-        barcodeInfos.push(newBarcodeInfo);
+    setBarcodeInfos((prevBarcodeInfos) => {
+      const index = prevBarcodeInfos.findIndex(
+        (imageInfo) => imageInfo.key === key
+      );
+
+      if (index !== -1) {
+        const updatedInfos = [...prevBarcodeInfos];
+        updatedInfos[index] = { ...updatedInfos[index], ...newBarcodeInfo };
+        return updatedInfos;
+      } else {
+        return [...prevBarcodeInfos, { key, ...prevBarcodeInfos }];
       }
-    }
-  }; //fonction de mise à jour des informations d'un barcode
+    });
+  };
 
   const deleteBarcodeItem = (key) => {
     setBarcodeItems((prevBarcodeItems) => {
@@ -525,47 +338,36 @@ function App() {
   //-- ADRESSE --
   const addAdresseItem = () => {
     const key = Date.now().toString(); //genere une clé unique
-    setAdresseItems([
-      ...adresseItems,
+    setAdresseItems((prevAdresseItems) => [
+      ...prevAdresseItems,
       <div key={key}>
         <AdresseItem
-          key={key}
+          uniqueKey={key}
+          csvColumn={csvColumn}
           onAdresseChange={(newAdresseInfo) =>
             updateAdresseInfo(newAdresseInfo, key)
           }
+          onDelete={deleteAdresseItem}
         />
-        <ButtonCustom onClick={() => deleteAdresseItem(key)}>
-          Supprimer
-        </ButtonCustom>
       </div>,
     ]);
   }; //fonction d'ajout d'un item adresse
 
   const updateAdresseInfo = (newAdresseInfo, key) => {
-    newAdresseInfo.key = key;
-    let found = false;
-    if (adresseInfos.length === 0) {
-      adresseInfos.push(newAdresseInfo);
-    } else {
-      adresseInfos.forEach((adresseInfo) => {
-        if (adresseInfo.key === key) {
-          adresseInfo.adresseSexe = newAdresseInfo.adresseSexe;
-          adresseInfo.adressePrenom = newAdresseInfo.adressePrenom;
-          adresseInfo.adresseNom = newAdresseInfo.adresseNom;
-          adresseInfo.adresseValeur = newAdresseInfo.adresseValeur;
-          adresseInfo.adresseCodePostal = newAdresseInfo.adresseCodePostal;
-          adresseInfo.adresseVille = newAdresseInfo.adresseVille;
-          adresseInfo.adressePays = newAdresseInfo.adressePays;
-          adresseInfo.adresseX = newAdresseInfo.adresseX;
-          adresseInfo.adresseY = newAdresseInfo.adresseY;
-          found = true;
-        }
-      });
-      if (!found) {
-        adresseInfos.push(newAdresseInfo);
+    setAdresseInfos((prevAdresseInfos) => {
+      const index = prevAdresseInfos.findIndex(
+        (adresseInfos) => adresseInfos.key === key
+      );
+
+      if (index !== -1) {
+        const updatedInfos = [...prevAdresseInfos];
+        updatedInfos[index] = { ...updatedInfos[index], ...newAdresseInfo };
+        return updatedInfos;
+      } else {
+        return [...prevAdresseInfos, { key, ...newAdresseInfo }];
       }
-    }
-  }; //fonction de mise à jour des informations d'un adresse
+    });
+  }; // fonction de mise à jour des informations d'une adresse
 
   const deleteAdresseItem = (key) => {
     setAdresseItems((prevAdresseItems) => {
@@ -633,36 +435,17 @@ function App() {
           <span className="title-item">PUBLIPOSTAGE STUDIO</span>
         </div>
         <div className="categories">
-          <Modal buttonText="FICHER">
-            <span className="modalTitle">FICHIER</span>
-            <FileUploadForm
-              onPdfFileSelect={handlePdfFileSelect}
-              onCSVFileSelect={handleCSVFileSelect}
-            ></FileUploadForm>
+          <Modal buttonText="DASHBOARD">
+            <span className="modalTitle">DASHBOARD</span>
           </Modal>
-          <Modal buttonText="IMAGE">
-            <span className="modalTitle">IMAGE</span>
-            {imageItems}
-            <ButtonCustom onClick={addImageItem}>+</ButtonCustom>
-          </Modal>
-          <Modal buttonText="BARCODE">
-            <span className="modalTitle">BARCODE & QRCODE</span>
-            {barcodeItems}
-            <ButtonCustom onClick={addBarcodeItem}>+</ButtonCustom>
-          </Modal>
-          <Modal buttonText="ADRESSE">
-            <span className="modalTitle">ADRESSE</span>
-            {adresseItems}
-            <ButtonCustom onClick={addAdresseItem}>+</ButtonCustom>
-          </Modal>
-          <Modal buttonText="BLOCTEXTE">
-            <span className="modalTitle">BLOCTEXTE</span>
-            {textItems}
-            <ButtonCustom onClick={addTextItem}>+</ButtonCustom>
-          </Modal>
+          <ButtonCustom onClick={() => handleWindowSelect("composition")}>
+            <span className="buttonText">COMPOSITION</span>
+          </ButtonCustom>
+          <ButtonCustom onClick={() => handleWindowSelect("enrichir")}>
+            <span className="buttonText">ENRICHIR</span>
+          </ButtonCustom>
         </div>
         <div className="submit">
-          {/* <ButtonCustom onClick={generatePDF}>GÉNÉRER</ButtonCustom> */}
           <ButtonCustom onClick={handleRunExecutable}>EXECUTER</ButtonCustom>
         </div>
       </div>
@@ -678,6 +461,154 @@ function App() {
           <p>PDF non généré</p>
         )}
       </div>
+      {windowSelect === "dashboard" && <div className="options"></div>}
+      {windowSelect === "composition" && (
+        <div className="options">
+          <div className="elements">
+            <div className="elements-line">
+              {/* Fichier */}
+              <div className="elements-line-button">
+                <ButtonCustom
+                  onClick={() => handleElementTypeSelect("fichier")}
+                >
+                  <div>Fichier</div>
+
+                  <svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m0 0h24v24h-24z" fill="#fff" opacity="0" />
+                    <path
+                      d="m19.74 7.33-4.44-5a1 1 0 0 0 -.74-.33h-8a2.53 2.53 0 0 0 -2.56 2.5v15a2.53 2.53 0 0 0 2.56 2.5h10.88a2.53 2.53 0 0 0 2.56-2.5v-11.5a1 1 0 0 0 -.26-.67zm-5.74-3.33 3.74 4h-3a.79.79 0 0 1 -.74-.85z"
+                      fill="#231f20"
+                    />
+                  </svg>
+                </ButtonCustom>
+              </div>
+              {/* Texte */}
+              <div className="elements-line-button">
+                <ButtonCustom onClick={() => handleElementTypeSelect("texte")}>
+                  <div>Texte</div>
+
+                  <svg viewBox="0 -1 8 12" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m0 0v2h.5c0-.55.45-1 1-1h1.5v5.5c0 .28-.22.5-.5.5h-.5v1h4v-1h-.5c-.28 0-.5-.22-.5-.5v-5.5h1.5c.55 0 1 .45 1 1h.5v-2z" />
+                  </svg>
+                </ButtonCustom>
+              </div>
+              {/* Image */}
+              <div className="elements-line-button">
+                <ButtonCustom onClick={() => handleElementTypeSelect("image")}>
+                  <div>Image</div>
+
+                  <svg
+                    width="24"
+                    height="24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M21.414 21.414l-.707-.707.707.707zm-18.828 0l.707-.707-.707.707zM21.414 2.586l.707-.707-.707.707zM6 3h12V1H6v2zM3 18V6H1v12h2zm15 3H6v2h12v-2zm3-15v12h2V6h-2zm-3 17c.915 0 1.701.002 2.328-.082.655-.088 1.284-.287 1.793-.797l-1.414-1.414c-.076.076-.212.17-.646.229-.462.062-1.09.064-2.061.064v2zm3-5c0 .971-.002 1.599-.064 2.061-.059.434-.153.57-.229.646l1.414 1.414c.51-.51.709-1.138.797-1.793C23.002 19.7 23 18.915 23 18h-2zM1 18c0 .915-.002 1.701.082 2.328.088.655.287 1.284.797 1.793l1.414-1.414c-.076-.076-.17-.212-.229-.646C3.002 19.6 3 18.971 3 18H1zm5 3c-.971 0-1.599-.002-2.061-.064-.434-.059-.57-.153-.646-.229l-1.414 1.414c.51.51 1.138.709 1.793.797C4.3 23.002 5.085 23 6 23v-2zM18 3c.971 0 1.599.002 2.061.064.434.059.57.153.646.229l1.414-1.414c-.51-.51-1.138-.709-1.793-.797C19.7.998 18.915 1 18 1v2zm5 3c0-.915.002-1.701-.082-2.328-.088-.655-.287-1.284-.797-1.793l-1.414 1.414c.076.076.17.212.229.646C20.998 4.4 21 5.029 21 6h2zM6 1c-.915 0-1.701-.002-2.328.082-.655.088-1.284.287-1.793.797l1.414 1.414c.076-.076.212-.17.646-.229C4.4 3.002 5.029 3 6 3V1zM3 6c0-.971.002-1.599.064-2.061.059-.434.153-.57.229-.646L1.879 1.879c-.51.51-.709 1.138-.797 1.793C.998 4.3 1 5.085 1 6h2z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M12 15.846L9.827 13.73c-1.335-1.3-2.003-1.951-2.83-1.951-.825 0-1.493.65-2.827 1.952L2 15.846m20-3.516l-3.145-3.056c-1.346-1.308-2.02-1.962-2.85-1.958-.831.005-1.497.666-2.83 1.99L9.677 12.78"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </ButtonCustom>
+              </div>
+            </div>
+            <div className="elements-line">
+              {/* Barcode */}
+              <div className="elements-line-button">
+                <ButtonCustom
+                  onClick={() => handleElementTypeSelect("barcode")}
+                >
+                  <div>Barcode</div>
+
+                  <svg
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g fill="#000000">
+                      <path d="m17 21.25h-10c-3.65 0-5.75-2.1-5.75-5.75v-7c0-3.65 2.1-5.75 5.75-5.75h10c3.65 0 5.75 2.1 5.75 5.75v7c0 3.65-2.1 5.75-5.75 5.75zm-10-17c-2.86 0-4.25 1.39-4.25 4.25v7c0 2.86 1.39 4.25 4.25 4.25h10c2.86 0 4.25-1.39 4.25-4.25v-7c0-2.86-1.39-4.25-4.25-4.25z" />
+                      <path d="m6 16.75c-.41 0-.75-.34-.75-.75v-8c0-.41.34-.75.75-.75s.75.34.75.75v8c0 .41-.34.75-.75.75z" />
+                      <path d="m9 12.75c-.41 0-.75-.34-.75-.75v-4c0-.41.34-.75.75-.75s.75.34.75.75v4c0 .41-.34.75-.75.75z" />
+                      <path d="m9 16.75c-.41 0-.75-.34-.75-.75v-1c0-.41.34-.75.75-.75s.75.34.75.75v1c0 .41-.34.75-.75.75z" />
+                      <path d="m15 9.75c-.41 0-.75-.34-.75-.75v-1c0-.41.34-.75.75-.75s.75.34.75.75v1c0 .41-.34.75-.75.75z" />
+                      <path d="m12 16.75c-.41 0-.75-.34-.75-.75v-8c0-.41.34-.75.75-.75s.75.34.75.75v8c0 .41-.34.75-.75.75z" />
+                      <path d="m15 16.75c-.41 0-.75-.34-.75-.75v-4c0-.41.34-.75.75-.75s.75.34.75.75v4c0 .41-.34.75-.75.75z" />
+                      <path d="m18 16.75c-.41 0-.75-.34-.75-.75v-8c0-.41.34-.75.75-.75s.75.34.75.75v8c0 .41-.34.75-.75.75z" />
+                    </g>
+                  </svg>
+                </ButtonCustom>
+              </div>
+              {/* Adresse */}
+              <div className="elements-line-button">
+                <ButtonCustom
+                  onClick={() => handleElementTypeSelect("adresse")}
+                >
+                  <div>Adresse</div>
+
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m2 3h12c.5522847 0 1 .44771525 1 1s-.4477153 1-1 1h-12c-.55228475 0-1-.44771525-1-1s.44771525-1 1-1z" />
+                    <path d="m2 7h12c.5522847 0 1 .44771525 1 1s-.4477153 1-1 1h-12c-.55228475 0-1-.44771525-1-1s.44771525-1 1-1z" />
+                    <path d="m1.88888889 11h6.22222222c.49091978 0 .88888889.4477153.88888889 1s-.39796911 1-.88888889 1h-6.22222222c-.49091978 0-.88888889-.4477153-.88888889-1s.39796911-1 .88888889-1z" />
+                  </svg>
+                </ButtonCustom>
+              </div>
+              {/* Other1 */}
+              <div className="elements-line-button">
+                <ButtonCustom onClick={() => handleElementTypeSelect("other2")}>
+                  <div>Other1</div>
+
+                  <svg
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="m6 1a1 1 0 0 0 -2 0zm-2 3a1 1 0 0 0 2 0zm7-3a1 1 0 1 0 -2 0zm-2 3a1 1 0 0 0 2 0zm7-3a1 1 0 1 0 -2 0zm-2 3a1 1 0 1 0 2 0zm-13 2a1 1 0 0 0 0 2zm18 2a1 1 0 1 0 0-2zm-14 3v-1h-1v1zm0 .01h-1v1h1zm.01 0v1h1v-1zm0-.01h1v-1h-1zm4.99 0v-1h-1v1zm0 .01h-1v1h1zm.01 0v1h1v-1zm0-.01h1v-1h-1zm-.01 4v-1h-1v1zm0 .01h-1v1h1zm.01 0v1h1v-1zm0-.01h1v-1h-1zm4.99 0v-1h-1v1zm0 .01h-1v1h1zm.01 0v1h1v-1zm0-.01h1v-1h-1zm-.01-4v-1h-1v1zm0 .01h-1v1h1zm.01 0v1h1v-1zm0-.01h1v-1h-1zm-10.01 4v-1h-1v1zm0 .01h-1v1h1zm.01 0v1h1v-1zm0-.01h1v-1h-1zm-3.01-11h16v-2h-16zm16 0h2a2 2 0 0 0 -2-2zm0 0v14h2v-14zm0 14v2a2 2 0 0 0 2-2zm0 0h-16v2h16zm-16 0h-2a2 2 0 0 0 2 2zm0 0v-14h-2v14zm0-14v-2a2 2 0 0 0 -2 2zm2-3v3h2v-3zm5 0v3h2v-3zm5 0v3h2v-3zm-13 7h18v-2h-18zm3 3v.01h2v-.01zm1 1.01h.01v-2h-.01zm1.01-1v-.01h-2v.01zm-1-1.01h-.01v2h.01zm3.99 1v.01h2v-.01zm1 1.01h.01v-2h-.01zm1.01-1v-.01h-2v.01zm-1-1.01h-.01v2h.01zm-1.01 5v.01h2v-.01zm1 1.01h.01v-2h-.01zm1.01-1v-.01h-2v.01zm-1-1.01h-.01v2h.01zm3.99 1v.01h2v-.01zm1 1.01h.01v-2h-.01zm1.01-1v-.01h-2v.01zm-1-1.01h-.01v2h.01zm-1.01-3v.01h2v-.01zm1 1.01h.01v-2h-.01zm1.01-1v-.01h-2v.01zm-1-1.01h-.01v2h.01zm-11.01 5v.01h2v-.01zm1 1.01h.01v-2h-.01zm1.01-1v-.01h-2v.01zm-1-1.01h-.01v2h.01z"
+                      fill="#000"
+                    />
+                  </svg>
+                </ButtonCustom>
+              </div>
+            </div>
+          </div>
+          <div className="params">
+            {selectedElementType === "fichier" && (
+              <FileUploadForm
+                onPdfFileSelect={handlePdfFileSelect}
+                onCSVFileSelect={handleCSVFileSelect}
+              ></FileUploadForm>
+            )}
+            {selectedElementType === "image" && imageItems}
+            {selectedElementType === "image" && (
+              <ButtonCustom onClick={addImageItem}>+</ButtonCustom>
+            )}
+            {selectedElementType === "barcode" && barcodeItems}
+            {selectedElementType === "barcode" && (
+              <ButtonCustom onClick={addBarcodeItem}>+</ButtonCustom>
+            )}
+            {selectedElementType === "adresse" && adresseItems}
+            {selectedElementType === "adresse" && (
+              <ButtonCustom onClick={addAdresseItem}>+</ButtonCustom>
+            )}
+            {selectedElementType === "texte" && textItems}
+            {selectedElementType === "texte" && (
+              <ButtonCustom onClick={addTextItem}>+</ButtonCustom>
+            )}
+            {selectedElementType === "other1" && "other1"}
+          </div>
+        </div>
+      )}
+      {windowSelect === "enrichir" && (
+        <div className="options">
+          <div>ENRICHIR</div>
+        </div>
+      )}
     </div>
   );
 }
