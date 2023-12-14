@@ -15,23 +15,62 @@ function FileUploadForm(props) {
     return storedFile ? JSON.parse(storedFile) : null;
   });
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
+
     if (props.onCSVFileSelect) {
       props.onCSVFileSelect(selectedFile);
     }
+
     localStorage.setItem("uploadedFile", JSON.stringify(selectedFile));
-    handleSubmit();
+
+    if (selectedFile) {
+      const fileContent = await readFile(selectedFile);
+
+      if (selectedFile.name.includes(".csv")) {
+        const jsonData = await csv().fromString(fileContent);
+        const xmlData = convertToXML(jsonData);
+        const response = await axios.post("http://localhost:3001/importXML", {
+          xml: xmlData,
+        });
+        console.log(response.data);
+      } else if (selectedFile.name.includes(".xml")) {
+        const xmlData = fileContent;
+        const response = await axios.post("http://localhost:3001/importXML", {
+          xml: xmlData,
+        });
+        console.log(response.data);
+      } else {
+        alert("ERROR !");
+        setFile(null);
+      }
+    }
   };
 
-  const handlePdfFileChange = (event) => {
+  const handlePdfFileChange = async (event) => {
     const selectedPdfFile = event.target.files[0];
     if (props.onPdfFileSelect) {
       props.onPdfFileSelect(selectedPdfFile);
     }
     localStorage.setItem("uploadedPdfFile", JSON.stringify(selectedPdfFile));
     setPdfFile(selectedPdfFile);
+    try {
+      const formData = new FormData();
+      formData.append("pdfFile", selectedPdfFile);
+      const response = await axios.post(
+        "http://localhost:3001/uploadPdf",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error uploading PDF file:", error);
+    }
   };
 
   function cleanXMLTagName(tagName) {
@@ -45,33 +84,6 @@ function FileUploadForm(props) {
     }
     return tagName;
   }
-
-  const handleSubmit = async () => {
-    if (file) {
-      const fileContent = await readFile(file); // lecture du fichier CSV
-      const fileName = file.name;
-      //si fileName contient ".csv" alors
-      if (fileName.includes(".csv")) {
-        const jsonData = await csv().fromString(fileContent); // convertion du fichier CSV en objet JSON
-        const xmlData = convertToXML(jsonData); // convertion du fichier JSON en XML
-        const response = await axios.post("http://localhost:3001/importXML", {
-          xml: xmlData,
-        });
-        console.log(response.data);
-      }
-      //sinon si il ne contient pas ".xml" alors
-      else if (fileName.includes(".xml")) {
-        const xmlData = fileContent;
-        const response = await axios.post("http://localhost:3001/importXML", {
-          xml: xmlData,
-        });
-        console.log(response.data);
-      } else {
-        alert("ERROR !");
-        setFile(null);
-      }
-    }
-  };
 
   const readFile = (file) => {
     return new Promise((resolve, reject) => {

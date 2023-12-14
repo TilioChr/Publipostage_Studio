@@ -65,6 +65,18 @@ function App() {
     console.log("csvData: ", csvData);
   }, [csvData, csvLength]); // mise à jour de csvLength et csvData
 
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      await axios.post("http://localhost:3001/unload", {
+        message: "unload",
+      });
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   // Genere via Impress
   const handleRunExecutable = async () => {
     const response = await axios.get("http://localhost:3001/deleteContent"); //reset du dff
@@ -167,16 +179,6 @@ function App() {
       const response = await axios.post(urlBackend, adresseJson);
       console.log("adresse : ", response.data);
     }
-
-    //pdf background
-    /* if (1 === 1) {
-      const pdfBackground = { type: "pdf", pdf: selectedPdfFile };
-      const response = await axios.post(
-        "http://localhost:3001/setBackground",
-        pdfBackground
-      );
-      console.log("pdfBackground : ", response.data);
-    } */
 
     //generation et affichage du pdf
     try {
