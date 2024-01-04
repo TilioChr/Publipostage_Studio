@@ -75,7 +75,6 @@ input {
   content: "Selectionner une image";
   display: inline-block;
   text-align: center;
-  background: linear-gradient(top, #f9f9f9, #e3e3e3);
   border: 1px solid #999;
   border-radius: 3px;
   padding: 5px 8px;

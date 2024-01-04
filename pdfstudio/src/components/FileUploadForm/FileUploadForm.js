@@ -15,6 +15,11 @@ function FileUploadForm(props) {
     return storedFile ? JSON.parse(storedFile) : null;
   });
 
+  /* const [projectName, setProjectName] = useState(() => {
+    const storedProjectName = localStorage.getItem("projectName");
+    return storedProjectName ? JSON.parse(storedProjectName) : null;
+  }); */
+
   const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
@@ -73,6 +78,12 @@ function FileUploadForm(props) {
     }
   };
 
+  /* const handleProjectNameChange = (event) => {
+    const projectName = event.target.value;
+    setProjectName(projectName);
+    localStorage.setItem("projectName", JSON.stringify(projectName));
+  }; */
+
   function cleanXMLTagName(tagName) {
     // Encodez les caractères non valides
     tagName = encodeURIComponent(tagName);
@@ -117,6 +128,7 @@ function FileUploadForm(props) {
     const handleBeforeUnload = () => {
       localStorage.removeItem("uploadedFile");
       localStorage.removeItem("uploadedPdfFile");
+      localStorage.removeItem("projectName");
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -128,42 +140,64 @@ function FileUploadForm(props) {
 
   return (
     <div className="container">
-      <span>Ficher données</span>
-      <div className="datafile">
-        <input type="file" onChange={handleFileChange} accept=".csv, .xml" />
-        {file && (
-          <div className="valid-icon">
-            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-              <path d="m504 256c0 136.967-111.033 248-248 248s-248-111.033-248-248 111.033-248 248-248 248 111.033 248 248zm-276.686 131.314 184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0l-150.059 150.058-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z" />
-            </svg>
-          </div>
-        )}
-        {!file && (
-          <div className="invalid-icon">
-            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-              <path d="m256 8c-137 0-248 111-248 248s111 248 248 248 248-111 248-248-111-248-248-248zm121.6 313.1c4.7 4.7 4.7 12.3 0 17l-39.6 39.5c-4.7 4.7-12.3 4.7-17 0l-65-65.6-65.1 65.6c-4.7 4.7-12.3 4.7-17 0l-39.5-39.6c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17l-65.7 65z" />
-            </svg>
-          </div>
-        )}
+      {/* <div className="file-item">
+        <span>Nom du projet</span>
+        <input
+          type="text"
+          value={projectName}
+          onChange={handleProjectNameChange}
+        ></input>
+      </div> */}
+      <div className="file-item">
+        <span>Ficher données</span>
+        <div className="datafile">
+          <input
+            type="file"
+            className="input-data"
+            onChange={handleFileChange}
+            accept=".csv, .xml"
+          />
+          {file && (
+            <div className="valid-icon">
+              <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <path d="m504 256c0 136.967-111.033 248-248 248s-248-111.033-248-248 111.033-248 248-248 248 111.033 248 248zm-276.686 131.314 184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0l-150.059 150.058-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z" />
+              </svg>
+            </div>
+          )}
+          {!file && (
+            <div className="invalid-icon">
+              <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <path d="m256 8c-137 0-248 111-248 248s111 248 248 248 248-111 248-248-111-248-248-248zm121.6 313.1c4.7 4.7 4.7 12.3 0 17l-39.6 39.5c-4.7 4.7-12.3 4.7-17 0l-65-65.6-65.1 65.6c-4.7 4.7-12.3 4.7-17 0l-39.5-39.6c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17l-65.7 65z" />
+              </svg>
+            </div>
+          )}
+        </div>
       </div>
 
-      <span>PDF d'origine</span>
-      <div className="pdffile">
-        <input type="file" onChange={handlePdfFileChange} accept=".pdf"></input>
-        {pdfFile && (
-          <div className="valid-icon">
-            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-              <path d="m504 256c0 136.967-111.033 248-248 248s-248-111.033-248-248 111.033-248 248-248 248 111.033 248 248zm-276.686 131.314 184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0l-150.059 150.058-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z" />
-            </svg>
-          </div>
-        )}
-        {!pdfFile && (
-          <div className="invalid-icon">
-            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-              <path d="m256 8c-137 0-248 111-248 248s111 248 248 248 248-111 248-248-111-248-248-248zm121.6 313.1c4.7 4.7 4.7 12.3 0 17l-39.6 39.5c-4.7 4.7-12.3 4.7-17 0l-65-65.6-65.1 65.6c-4.7 4.7-12.3 4.7-17 0l-39.5-39.6c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17l-65.7 65z" />
-            </svg>
-          </div>
-        )}
+      <div className="file-item">
+        <span>PDF d'origine</span>
+        <div className="pdffile">
+          <input
+            className="input-pdf"
+            type="file"
+            onChange={handlePdfFileChange}
+            accept=".pdf"
+          ></input>
+          {pdfFile && (
+            <div className="valid-icon">
+              <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <path d="m504 256c0 136.967-111.033 248-248 248s-248-111.033-248-248 111.033-248 248-248 248 111.033 248 248zm-276.686 131.314 184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0l-150.059 150.058-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z" />
+              </svg>
+            </div>
+          )}
+          {!pdfFile && (
+            <div className="invalid-icon">
+              <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <path d="m256 8c-137 0-248 111-248 248s111 248 248 248 248-111 248-248-111-248-248-248zm121.6 313.1c4.7 4.7 4.7 12.3 0 17l-39.6 39.5c-4.7 4.7-12.3 4.7-17 0l-65-65.6-65.1 65.6c-4.7 4.7-12.3 4.7-17 0l-39.5-39.6c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17l-65.7 65z" />
+              </svg>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

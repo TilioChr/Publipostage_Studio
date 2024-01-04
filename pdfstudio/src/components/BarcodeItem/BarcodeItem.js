@@ -3,37 +3,52 @@ import "./BarcodeItem.css";
 import JsBarcode from "jsbarcode";
 import QRCode from "qrcode.react";
 
-const BarcodeItem = ({ onBarcodeChange, uniqueKey, onDelete }) => {
+const BarcodeItem = ({
+  onBarcodeChange,
+  uniqueKey,
+  onDelete,
+  barcodeSizeXImport,
+  barcodeSizeYImport,
+  barcodeTypeImport,
+  barcodeXImport,
+  barcodeYImport,
+  barcodeValeurImport,
+}) => {
   const localStorageKey = `barcodeItem_${uniqueKey}`;
   const [barcodeValeur, setbarcodeValeur] = useState(() => {
     const storedBarcodeValeur = localStorage.getItem(
       `${localStorageKey}_valeur`
     );
-    return storedBarcodeValeur || "";
+    return storedBarcodeValeur || barcodeValeurImport || "";
   }); // État pour stocker la valeur du barcode
   const [barcodeSizeX, setbarcodeSizeX] = useState(() => {
     const storedBarcodeSizeX = localStorage.getItem(`${localStorageKey}_sizeX`);
-    return storedBarcodeSizeX ? parseInt(storedBarcodeSizeX) : 100;
+    return parseInt(storedBarcodeSizeX) || barcodeSizeXImport || 100;
   }); // État pour stocker la taille du barcode
   const [barcodeSizeY, setbarcodeSizeY] = useState(() => {
     const storedBarcodeSizeY = localStorage.getItem(`${localStorageKey}_sizeY`);
-    return storedBarcodeSizeY ? parseInt(storedBarcodeSizeY) : 100;
+    return parseInt(storedBarcodeSizeY) || barcodeSizeYImport || 100;
   }); // État pour stocker la taille du barcode
   const [barcodeX, setBarcodeX] = useState(() => {
     const storedBarcodeX = localStorage.getItem(`${localStorageKey}_x`);
-    return storedBarcodeX ? parseInt(storedBarcodeX) : 0;
+    return parseInt(storedBarcodeX) || barcodeXImport || 0;
   }); // État pour stocker la position X du barcode
   const [barcodeY, setBarcodeY] = useState(() => {
     const storedBarcodeY = localStorage.getItem(`${localStorageKey}_y`);
-    return storedBarcodeY ? parseInt(storedBarcodeY) : 0;
+    return parseInt(storedBarcodeY) || barcodeYImport || 0;
   }); // État pour stocker la position Y du barcode
   const [barcodeType, setBarcodeType] = useState(() => {
     const storedBarcodeType = localStorage.getItem(`${localStorageKey}_type`);
-    return storedBarcodeType || "CODE128";
+    return storedBarcodeType || barcodeTypeImport || "CODE128";
   }); // État pour stocker le type du barcode
   const [errorMessage, setErrorMessage] = useState(""); // État pour stocker les messages d'erreur
   const svgRef = useRef(null); // Référence à l'élément SVG
-  const [showParameters, setShowParameters] = useState(true); // Etat pour stocker la valeur de la visibilité des paramètres
+  const [showParameters, setShowParameters] = useState(() => {
+    const storedShowParameters = localStorage.getItem(
+      `${localStorageKey}_showParameters`
+    );
+    return storedShowParameters ? JSON.parse(storedShowParameters) : true;
+  }); // État pour stocker la valeur de l'affichage des paramètres
 
   useEffect(() => {
     setErrorMessage(""); // Effacer les erreurs
@@ -149,8 +164,13 @@ const BarcodeItem = ({ onBarcodeChange, uniqueKey, onDelete }) => {
   }; // Fonction pour supprimer l'element
 
   const toggleParametersVisibility = () => {
-    setShowParameters((prevShowParameters) => !prevShowParameters);
-  }; // Fonction pour afficher ou masquer les paramètres
+    const newShowParameters = !showParameters;
+    setShowParameters(newShowParameters);
+    localStorage.setItem(
+      `${localStorageKey}_showParameters`,
+      JSON.stringify(newShowParameters)
+    );
+  }; // Fonction pour afficher ou cacher les paramètres
 
   return (
     <div className="barcode">

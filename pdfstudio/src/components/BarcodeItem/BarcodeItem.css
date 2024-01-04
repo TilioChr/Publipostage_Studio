@@ -19,7 +19,7 @@
 .barcode-option-item {
   display: flex;
   flex-direction: column;
-  margin: 10px;
+  padding: 0px 10px 10px 10px;
 }
 
 .barcode-option-item-dual {

@@ -5,6 +5,8 @@
   padding: 0px;
   display: flex;
   flex-direction: row;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .menu {
@@ -49,7 +51,20 @@
   margin-bottom: 10px;
 }
 
+.dashboard {
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  gap: 30px;
+  justify-content: left;
+  flex-wrap: wrap;
+  margin-left: 10px;
+}
+
 .workspace {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100vh;
   background-color: #333333;
@@ -123,6 +138,13 @@ select {
   border-radius: 5px;
   border: 1px solid #d9d9d9;
   padding: 5px 5px 5px 5px;
+}
+.goal-button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 20%;
 }
 
 .loading-overlay {

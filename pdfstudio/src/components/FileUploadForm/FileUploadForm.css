@@ -9,10 +9,18 @@
   color: rgb(219, 219, 219);
 }
 
-.container div {
+.file-item div {
   display: flex;
-  width: 80%;
+  width: 100%;
   gap: 20px;
+}
+
+.file-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 80%;
+  align-items: center;
 }
 
 .valid-icon {
@@ -31,4 +39,38 @@
 .pdffile {
   display: flex;
   align-items: center;
+}
+
+/* --------------------- */
+
+.input-data::-webkit-file-upload-button,
+.input-pdf::-webkit-file-upload-button {
+  visibility: hidden;
+}
+
+.input-data::before,
+.input-pdf::before {
+  display: inline-block;
+  text-align: center;
+  border-radius: 3px;
+  padding: 5px 0px;
+  outline: none;
+  white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  font-weight: 700;
+  width: 100%;
+}
+.input-data:hover::before,
+.input-pdf:hover::before {
+  color: rgb(172, 172, 172);
+}
+
+.input-data::before {
+  content: "Importer";
+}
+
+.input-pdf::before {
+  content: "Importer";
 }

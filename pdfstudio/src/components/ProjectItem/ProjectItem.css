@@ -1,0 +1,90 @@
+.wrapper {
+  color: white;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding-bottom: 10px;
+  border-radius: 5px;
+}
+
+.wrapper:hover {
+  background-color: #303030;
+}
+
+.wrapper:hover .preview img {
+  transition: 0.3s ease;
+  opacity: 0.5;
+}
+
+.preview {
+  display: flex;
+  justify-content: center;
+  height: 297px;
+  width: 210px;
+  padding: 10px;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  transition: opacity 0.3s ease;
+  user-select: none;
+}
+
+.preview img {
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  opacity: 1;
+  background-color: black;
+}
+
+.loadButton,
+.deleteButton {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 10px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  border-style: solid;
+  border-color: white;
+  border-width: 1px;
+}
+
+.loadButton {
+  top: 45%;
+  left: 50%;
+  background-color: #3498db;
+  width: 50%;
+}
+
+.deleteButton {
+  top: 60%;
+  left: 50%;
+  width: 50%;
+  background-color: red;
+}
+
+.loadButton:hover {
+  background-color: #2e8dcc;
+}
+
+.deleteButton:hover {
+  background-color: #d63031;
+}
+
+.loadButton:active {
+  background-color: #2980b9;
+}
+
+.deleteButton:active {
+  background-color: #c0392b;
+}
+
+.wrapper:hover .loadButton,
+.wrapper:hover .deleteButton {
+  opacity: 1;
+}

@@ -1,29 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import "./TextItem.css";
 
-function TextItem({ onTextChange, csvColumn, uniqueKey, onDelete }) {
+function TextItem({
+  onTextChange,
+  csvColumn,
+  uniqueKey,
+  onDelete,
+  textXImport,
+  textYImport,
+  textLargeurImport,
+  textValeurImport,
+}) {
   const localStorageKey = `textItem_${uniqueKey}`;
 
   const [textX, setTextX] = useState(() => {
     const storedTextX = localStorage.getItem(`${localStorageKey}_x`);
-    return storedTextX ? parseInt(storedTextX) : 10;
+    return parseInt(storedTextX) || textXImport || 10;
   }); // Etat pour stocker la valeur de la position X
   const [textY, setTextY] = useState(() => {
     const storedTextY = localStorage.getItem(`${localStorageKey}_y`);
-    console.log(storedTextY);
-    console.log(localStorageKey);
-    return storedTextY ? parseInt(storedTextY) : 10;
+    return parseInt(storedTextY) || textYImport || 10;
   }); // Etat pour stocker la valeur de la position Y
   const [textLargeur, setTextLargeur] = useState(() => {
     const storedTextLargeur = localStorage.getItem(
       `${localStorageKey}_largeur`
     );
-    return storedTextLargeur ? parseInt(storedTextLargeur) : 100;
+    return parseInt(storedTextLargeur) || textLargeurImport || 100;
   }); // Etat pour stocker la valeur de la largeur
   const [textValeur, setTextValeur] = useState(() => {
     const storedTextValeur = localStorage.getItem(`${localStorageKey}_valeur`);
-    return storedTextValeur || "";
+    return storedTextValeur || textValeurImport || "";
   }); // Etat pour stocker la valeur du texte
   const [modalText, setModalText] = useState(() => {
     const storedTextValeur = localStorage.getItem(`${localStorageKey}_valeur`);
@@ -34,7 +41,12 @@ function TextItem({ onTextChange, csvColumn, uniqueKey, onDelete }) {
       return storedTextValeur || "";
     }
   }); // Etat pour stocker la valeur du texte de l'éditeur
-  const [showParameters, setShowParameters] = useState(true); // Etat pour stocker la valeur de la visibilité des paramètres
+  const [showParameters, setShowParameters] = useState(() => {
+    const storedShowParameters = localStorage.getItem(
+      `${localStorageKey}_showParameters`
+    );
+    return storedShowParameters ? JSON.parse(storedShowParameters) : true;
+  }); // Etat pour stocker la valeur de l'affichage des paramètres
 
   const handleTextXChange = (value) => {
     const newX = parseInt(value);
@@ -119,6 +131,12 @@ function TextItem({ onTextChange, csvColumn, uniqueKey, onDelete }) {
   };
   //#endregion
 
+  useEffect(() => {
+    setTextValeur(textValeurImport || "");
+    const textPreview = (textValeurImport || "").replace(/<[^>]+>/g, "");
+    setModalText(textPreview);
+  }, [textValeurImport]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleDelete = () => {
@@ -126,8 +144,13 @@ function TextItem({ onTextChange, csvColumn, uniqueKey, onDelete }) {
   }; // Fonction pour supprimer l'element
 
   const toggleParametersVisibility = () => {
-    setShowParameters((prevShowParameters) => !prevShowParameters);
-  }; // Fonction pour afficher ou masquer les paramètres
+    const newShowParameters = !showParameters;
+    setShowParameters(newShowParameters);
+    localStorage.setItem(
+      `${localStorageKey}_showParameters`,
+      JSON.stringify(newShowParameters)
+    );
+  }; // Fonction pour afficher ou cacher les paramètres
 
   return (
     <div className="text">

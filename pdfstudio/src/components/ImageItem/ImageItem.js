@@ -1,27 +1,40 @@
 import React, { useState } from "react";
 import "./ImageItem.css";
 
-const ImageItem = ({ onImageChange, uniqueKey, onDelete }) => {
+const ImageItem = ({
+  onImageChange,
+  uniqueKey,
+  onDelete,
+  imageSizeImport,
+  imageXImport,
+  imageYImport,
+  imagePreviewImport,
+}) => {
   const localStorageKey = `imageItem_${uniqueKey}`;
   const [imagePreview, setImagePreview] = useState(() => {
     const storedImagePreview = localStorage.getItem(
       `${localStorageKey}_preview`
     );
-    return storedImagePreview || "";
+    return storedImagePreview || imagePreviewImport || "";
   }); // Etat pour stocker la valeur de l'image
   const [imageSize, setImageSize] = useState(() => {
     const storedImageSize = localStorage.getItem(`${localStorageKey}_size`);
-    return storedImageSize ? parseInt(storedImageSize) : 100;
+    return storedImageSize ? parseInt(storedImageSize) : imageSizeImport || 100;
   }); // Etat pour stocker la valeur de la taille
   const [imageX, setImageX] = useState(() => {
     const storedImageX = localStorage.getItem(`${localStorageKey}_x`);
-    return storedImageX ? parseInt(storedImageX) : 0;
+    return parseInt(storedImageX) || imageXImport || 0;
   }); // Etat pour stocker la valeur de la position X
   const [imageY, setImageY] = useState(() => {
     const storedImageY = localStorage.getItem(`${localStorageKey}_y`);
-    return storedImageY ? parseInt(storedImageY) : 0;
+    return parseInt(storedImageY) || imageYImport || 0;
   }); // Etat pour stocker la valeur de la position Y
-  const [showParameters, setShowParameters] = useState(true); // Etat pour stocker la valeur de la visibilité des paramètres
+  const [showParameters, setShowParameters] = useState(() => {
+    const storedShowParameters = localStorage.getItem(
+      `${localStorageKey}_showParameters`
+    );
+    return storedShowParameters ? JSON.parse(storedShowParameters) : true;
+  }); // Etat pour stocker la valeur de l'affichage des paramètres
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -95,8 +108,13 @@ const ImageItem = ({ onImageChange, uniqueKey, onDelete }) => {
   }; // Fonction pour supprimer l'element
 
   const toggleParametersVisibility = () => {
-    setShowParameters((prevShowParameters) => !prevShowParameters);
-  }; // Fonction pour afficher ou masquer les paramètres
+    const newShowParameters = !showParameters;
+    setShowParameters(newShowParameters);
+    localStorage.setItem(
+      `${localStorageKey}_showParameters`,
+      JSON.stringify(newShowParameters)
+    );
+  }; // Fonction pour afficher ou cacher les paramètres
 
   return (
     <div className="image">

@@ -1,51 +1,75 @@
 import React, { useState } from "react";
 import "./AdresseItem.css";
 
-const AdresseItem = ({ onAdresseChange, csvColumn, uniqueKey, onDelete }) => {
+const AdresseItem = ({
+  onAdresseChange,
+  csvColumn,
+  uniqueKey,
+  onDelete,
+  adresseStructureImport,
+  adresseXImport,
+  adresseYImport,
+  adresseSizeImport,
+  adresse1Import,
+  adresse2Import,
+  adresse3Import,
+  adresse4Import,
+  adresse5Import,
+  adresse6Import,
+}) => {
   const localStorageKey = `adresseItem_${uniqueKey}`;
   const [adresseStructure, setAdresseStructure] = useState(() => {
     const storedAdresseStructure = localStorage.getItem(
       `${localStorageKey}_structure`
     );
-    return storedAdresseStructure || "1 - 2 | 3 | 4 | 5 - 6";
+    return (
+      storedAdresseStructure ||
+      adresseStructureImport ||
+      "1 - 2 | 3 | 4 | 5 - 6"
+    );
   });
   const [adresseX, setAdresseX] = useState(() => {
     const storedAdresseX = localStorage.getItem(`${localStorageKey}_x`);
-    return storedAdresseX ? parseInt(storedAdresseX) : 0;
+    return parseInt(storedAdresseX) || adresseXImport || 0;
   });
   const [adresseY, setAdresseY] = useState(() => {
     const storedAdresseY = localStorage.getItem(`${localStorageKey}_y`);
-    return storedAdresseY ? parseInt(storedAdresseY) : 0;
+    return parseInt(storedAdresseY) || adresseYImport || 0;
   });
   const [adresseSize, setAdresseSize] = useState(() => {
     const storedAdresseSize = localStorage.getItem(`${localStorageKey}_size`);
-    return storedAdresseSize ? parseInt(storedAdresseSize) : 11;
+    return parseInt(storedAdresseSize) || adresseSizeImport || 11;
   });
   const [adresse1, setAdresse1] = useState(() => {
     const storedAdresse1 = localStorage.getItem(`${localStorageKey}_1`);
-    return storedAdresse1 || "";
+    return storedAdresse1 || adresse1Import || "";
   });
   const [adresse2, setAdresse2] = useState(() => {
     const storedAdresse2 = localStorage.getItem(`${localStorageKey}_2`);
-    return storedAdresse2 || "";
+    return storedAdresse2 || adresse2Import || "";
   });
   const [adresse3, setAdresse3] = useState(() => {
     const storedAdresse3 = localStorage.getItem(`${localStorageKey}_3`);
-    return storedAdresse3 || "";
+    return storedAdresse3 || adresse3Import || "";
   });
   const [adresse4, setAdresse4] = useState(() => {
     const storedAdresse4 = localStorage.getItem(`${localStorageKey}_4`);
-    return storedAdresse4 || "";
+    return storedAdresse4 || adresse4Import || "";
   });
   const [adresse5, setAdresse5] = useState(() => {
     const storedAdresse5 = localStorage.getItem(`${localStorageKey}_5`);
-    return storedAdresse5 || "";
+    return storedAdresse5 || adresse5Import || "";
   });
   const [adresse6, setAdresse6] = useState(() => {
     const storedAdresse6 = localStorage.getItem(`${localStorageKey}_6`);
-    return storedAdresse6 || "";
+    return storedAdresse6 || adresse6Import || "";
   });
-  const [showParameters, setShowParameters] = useState(true); // Etat pour stocker la valeur de la visibilité des paramètres
+  const [showParameters, setShowParameters] = useState(() => {
+    const storedShowParameters = localStorage.getItem(
+      `${localStorageKey}_showParameters`
+    );
+    return storedShowParameters ? JSON.parse(storedShowParameters) : true;
+  });
 
   const handleAdresseStructure = (event) => {
     const Structure = event.target.value;
@@ -233,8 +257,13 @@ const AdresseItem = ({ onAdresseChange, csvColumn, uniqueKey, onDelete }) => {
   }; // Fonction pour supprimer l'element
 
   const toggleParametersVisibility = () => {
-    setShowParameters((prevShowParameters) => !prevShowParameters);
-  }; // Fonction pour afficher ou masquer les paramètres
+    const newShowParameters = !showParameters;
+    setShowParameters(newShowParameters);
+    localStorage.setItem(
+      `${localStorageKey}_showParameters`,
+      JSON.stringify(newShowParameters)
+    );
+  }; // Fonction pour afficher ou cacher les paramètres
 
   return (
     <div className="adresseItem">
@@ -315,8 +344,12 @@ const AdresseItem = ({ onAdresseChange, csvColumn, uniqueKey, onDelete }) => {
 
           {/* adresse 1 */}
           <div className="adresse-line">
-            <label>Adresse 1</label>
-            <select onChange={handleAdresse1} defaultValue={adresse1}>
+            <label>Element 1</label>
+            <select
+              onChange={handleAdresse1}
+              defaultValue={adresse1}
+              value={adresse1}
+            >
               <option></option>
               {csvColumn &&
                 csvColumn[0] &&
@@ -326,7 +359,7 @@ const AdresseItem = ({ onAdresseChange, csvColumn, uniqueKey, onDelete }) => {
 
           {/* adresse 2 */}
           <div className="adresse-line">
-            <label>Adresse 2</label>
+            <label>Element 2</label>
             <select onChange={handleAdresse2} defaultValue={adresse2}>
               <option></option>
               {csvColumn &&
@@ -337,7 +370,7 @@ const AdresseItem = ({ onAdresseChange, csvColumn, uniqueKey, onDelete }) => {
 
           {/* adresse 3 */}
           <div className="adresse-line">
-            <label>Adresse 3</label>
+            <label>Element 3</label>
             <select onChange={handleAdresse3} defaultValue={adresse3}>
               <option></option>
               {csvColumn &&
@@ -348,7 +381,7 @@ const AdresseItem = ({ onAdresseChange, csvColumn, uniqueKey, onDelete }) => {
 
           {/* adresse 4 */}
           <div className="adresse-line">
-            <label>Adresse 4</label>
+            <label>Element 4</label>
             <select onChange={handleAdresse4} defaultValue={adresse4}>
               <option></option>
               {csvColumn &&
@@ -359,7 +392,7 @@ const AdresseItem = ({ onAdresseChange, csvColumn, uniqueKey, onDelete }) => {
 
           {/* adresse 5 */}
           <div className="adresse-line">
-            <label>Adresse 5</label>
+            <label>Element 5</label>
             <select onChange={handleAdresse5} defaultValue={adresse5}>
               <option></option>
               {csvColumn &&
@@ -370,7 +403,7 @@ const AdresseItem = ({ onAdresseChange, csvColumn, uniqueKey, onDelete }) => {
 
           {/* adresse 6 */}
           <div className="adresse-line">
-            <label>Adresse 6</label>
+            <label>Element 6</label>
             <select onChange={handleAdresse6} defaultValue={adresse6}>
               <option></option>
               {csvColumn &&

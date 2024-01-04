@@ -10,6 +10,8 @@ import Papa from "papaparse";
 import axios from "axios";
 import JsBarcode from "jsbarcode";
 import Modal from "./components/Modal/Modal";
+import ProjectItem from "./components/ProjectItem/ProjectItem.js";
+import * as PDFJS from "pdfjs-dist/webpack";
 const QRCode = require("qrcode");
 
 function App() {
@@ -23,24 +25,24 @@ function App() {
   const [textItems, setTextItems] = useState([]); //tableau des items textes
   const [barcodeItems, setBarcodeItems] = useState([]); //tableau des items barcodes
   const [adresseItems, setAdresseItems] = useState([]); //tableau des items adresses
+  const [projectItems, setProjectItems] = useState([]); //tableau des items projets
 
-  const [selectedPdfFile, setSelectedPdfFile] = useState(null); //fichier pdf sélectionné
-  const [selectedCSVFile, setSelectedCSVFile] = useState(null); //fichier csv sélectionné
   const [csvLength, setCsvLength] = useState(1); //Nombre de lignes du fichier csv
   const [csvColumn] = useState([]); //Nom des premieres colonnes du fichier csv
   const [csvData, setCsvData] = useState([]); //Données du fichier csv
   const [isLoading, setIsLoading] = useState(false); //Etat de chargement de la generation du pdf
   const [pdfUrl, setPdfUrl] = useState(""); //URL du pdf généré
+  const [pdfBlob, setPdfBlob] = useState(""); //PDF généré
   const [selectedElementType, setSelectedElementType] = useState(null); //Type d'élément sélectionné
   const [windowSelect, setWindowSelect] = useState("composition"); //Etat de la fenetre de composition
   //#endregion STATES
 
-  const handlePdfFileSelect = (pdfFile) => {
-    setSelectedPdfFile(pdfFile);
-  }; //fonction de gestion du fichier pdf sélectionné
+  const handleDashboard = async () => {
+    const response = await axios.get("http://localhost:3001/dashboard");
+    setProjectItems(response.data);
+  };
 
   const handleCSVFileSelect = (CSVFile) => {
-    setSelectedCSVFile(CSVFile);
     console.log("CSV file selected:", CSVFile);
 
     Papa.parse(CSVFile, {
@@ -61,21 +63,19 @@ function App() {
   }; //parsing du csv à sa selection pour les nom de column dans textItem
 
   useEffect(() => {
-    console.log("csvLength updated:", csvLength);
-    console.log("csvData: ", csvData);
-  }, [csvData, csvLength]); // mise à jour de csvLength et csvData
-
-  useEffect(() => {
+    handleDashboard();
     const handleBeforeUnload = async () => {
       await axios.post("http://localhost:3001/unload", {
         message: "unload",
       });
+      localStorage.clear();
+      console.log("/!/ local storage cleared /!/");
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [csvData, csvLength]); // mise à jour de csvLength et csvData
 
   // Genere via Impress
   const handleRunExecutable = async () => {
@@ -191,13 +191,18 @@ function App() {
 
       //cacher le chargement
       setIsLoading(false);
-
       const pdfBlob = new Blob([response.data], {
         type: "application/pdf",
       });
+
+      setPdfBlob(pdfBlob);
       const url = URL.createObjectURL(pdfBlob);
 
       setPdfUrl(url);
+
+      console.log("pdfBlob : ", pdfBlob);
+
+      console.log("pdfUrl : ", pdfUrl);
     } catch (error) {
       console.error("Erreur lors de la récupération du fichier PDF", error);
     }
@@ -211,6 +216,222 @@ function App() {
   const handleWindowSelect = (windowType) => {
     setWindowSelect(windowType);
   }; //fonction de gestion de la fenetre de composition
+
+  const screenshot = async () => {
+    try {
+      const pdfDataUrl = URL.createObjectURL(pdfBlob);
+      const pdf = await PDFJS.getDocument({ url: pdfDataUrl }).promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 1 });
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      await page.render({ canvasContext: context, viewport: viewport }).promise;
+      const base64Preview = canvas.toDataURL();
+      console.log("screenshotted successfully");
+      return base64Preview;
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  async function sauvegarderDonnees() {
+    var projectName = prompt("Entrez le nom du projet");
+    projectName = projectName.replace(/ /g, "_");
+    projectName = projectName + ".json";
+    console.log("projectName: ", projectName);
+
+    // Récupérer l'URL de l'image de preview
+    const base64Preview = await screenshot();
+
+    var donneesAEnregistrer = {
+      image: imageInfos,
+      texte: textInfos,
+      codeBarre: barcodeInfos,
+      adresse: adresseInfos,
+      preview: base64Preview,
+    };
+    // Convertir l'objet en format JSON
+    var donneesJSON = JSON.stringify(donneesAEnregistrer);
+    // Envoi des données au backend
+    fetch("http://localhost:3001/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        name: projectName,
+      },
+      body: donneesJSON,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erreur lors de l'enregistrement des données");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Données enregistrées avec succès:", data);
+      })
+      .catch((error) => {
+        console.error("Erreur:", error);
+      });
+
+    setTimeout(() => {
+      handleDashboard();
+    }, 1000);
+    console.log("dashboard updated");
+  }
+
+  const loadProject = (projectName) => {
+    console.log("Loading Project...");
+    localStorage.clear();
+    console.log("projectName: ", projectName);
+    fetch("http://localhost:3001/projectLoad", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        name: projectName,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to load project data");
+        }
+        return response.json();
+      })
+      // Load project data
+      .then((data) => {
+        // Load IMAGE data
+        console.log("IMAGE data loaded:", data.image);
+        setImageInfos(data.image);
+        console.log("imageInfos: ", imageInfos);
+        setImageItems(
+          data.image.map((imageInfo) => {
+            return (
+              <div key={imageInfo.key}>
+                <ImageItem
+                  uniqueKey={imageInfo.key}
+                  imageSizeImport={imageInfo.imageSize}
+                  imageXImport={imageInfo.imageX}
+                  imageYImport={imageInfo.imageY}
+                  imagePreviewImport={imageInfo.imagePreview}
+                  onImageChange={(newImageInfo) =>
+                    updateImageInfo(newImageInfo, imageInfo.key)
+                  }
+                  onDelete={deleteImageItem}
+                />
+              </div>
+            );
+          })
+        );
+
+        // Load TEXT data
+        console.log("TEXT data loaded:", data.texte);
+        setTextInfos(data.texte);
+        setTextItems(
+          data.texte.map((textInfo) => {
+            return (
+              <div key={textInfo.key}>
+                <TextItem
+                  uniqueKey={textInfo.key}
+                  textValeurImport={textInfo.textValeur}
+                  textXImport={textInfo.textX}
+                  textYImport={textInfo.textY}
+                  textLargeurImport={textInfo.textLargeur}
+                  onTextChange={(newTextInfo) =>
+                    updateTextInfo(newTextInfo, textInfo.key)
+                  }
+                  csvColumn={csvColumn}
+                  onDelete={deleteTextItem}
+                />
+              </div>
+            );
+          })
+        );
+
+        // Load BARCODE data
+        console.log("BARCODE data loaded:", data.codeBarre);
+        setBarcodeInfos(data.codeBarre);
+        setBarcodeItems(
+          data.codeBarre.map((barcodeInfo) => {
+            return (
+              <div key={barcodeInfo.key}>
+                <BarcodeItem
+                  uniqueKey={barcodeInfo.key}
+                  barcodeValeurImport={barcodeInfo.barcodeValeur}
+                  barcodeXImport={barcodeInfo.barcodeX}
+                  barcodeYImport={barcodeInfo.barcodeY}
+                  barcodeSizeXImport={barcodeInfo.barcodeSizeX}
+                  barcodeSizeYImport={barcodeInfo.barcodeSizeY}
+                  barcodeTypeImport={barcodeInfo.barcodeType}
+                  onBarcodeChange={(newBarcodeInfo) =>
+                    updateBarcodeInfo(newBarcodeInfo, barcodeInfo.key)
+                  }
+                  onDelete={deleteBarcodeItem}
+                />
+              </div>
+            );
+          })
+        );
+
+        // Load ADRESSE data
+        console.log("ADRESSE data loaded:", data.adresse);
+        setAdresseInfos(data.adresse);
+        setAdresseItems(
+          data.adresse.map((adresseInfo) => {
+            return (
+              <div key={adresseInfo.key}>
+                <AdresseItem
+                  uniqueKey={adresseInfo.key}
+                  adresseStructureImport={adresseInfo.adresseStructure}
+                  adresseXImport={adresseInfo.adresseX}
+                  adresseYImport={adresseInfo.adresseY}
+                  adresseSizeImport={adresseInfo.adresseSize}
+                  adresse1Import={adresseInfo.adresse1}
+                  adresse2Import={adresseInfo.adresse2}
+                  adresse3Import={adresseInfo.adresse3}
+                  adresse4Import={adresseInfo.adresse4}
+                  adresse5Import={adresseInfo.adresse5}
+                  adresse6Import={adresseInfo.adresse6}
+                  onAdresseChange={(newAdresseInfo) =>
+                    updateAdresseInfo(newAdresseInfo, adresseInfo.key)
+                  }
+                  csvColumn={csvColumn}
+                  onDelete={deleteAdresseItem}
+                />
+              </div>
+            );
+          })
+        );
+
+        console.log("Project data loaded:", data);
+        handleDashboard();
+        alert("Projet chargé avec succès");
+      })
+      .catch((error) => {
+        console.error("Error loading project data:", error);
+      });
+  };
+
+  const deleteProject = (projectName) => {
+    console.log("Deleting Project...");
+    console.log("projectName: ", projectName);
+    fetch("http://localhost:3001/deleteProject", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        name: projectName,
+      },
+    })
+      .then((data) => {
+        console.log("Project data deleted:", data);
+        handleDashboard();
+        alert("Projet supprimé avec succès");
+      })
+      .catch((error) => {
+        console.error("Error deleting project data:", error);
+      });
+  };
 
   //#region ITEMS
   //--- IMAGE ---
@@ -439,6 +660,18 @@ function App() {
         <div className="categories">
           <Modal buttonText="DASHBOARD">
             <span className="modalTitle">DASHBOARD</span>
+            <div className="dashboard">
+              {projectItems.map((projectItem) => {
+                return (
+                  <ProjectItem
+                    projectName={projectItem.name}
+                    projectImage={projectItem.preview}
+                    onLoadButtonClick={loadProject}
+                    onDeleteButtonClick={deleteProject}
+                  ></ProjectItem>
+                );
+              })}
+            </div>
           </Modal>
           <ButtonCustom onClick={() => handleWindowSelect("composition")}>
             <span className="buttonText">COMPOSITION</span>
@@ -447,8 +680,15 @@ function App() {
             <span className="buttonText">ENRICHIR</span>
           </ButtonCustom>
         </div>
-        <div className="submit">
-          <ButtonCustom onClick={handleRunExecutable}>EXECUTER</ButtonCustom>
+        <div className="goal-button">
+          <div className="submit">
+            <ButtonCustom onClick={handleRunExecutable}>EXECUTER</ButtonCustom>
+          </div>
+          <div className="submit">
+            <ButtonCustom onClick={sauvegarderDonnees}>
+              SAUVEGARDER
+            </ButtonCustom>
+          </div>
         </div>
       </div>
       <div className="workspace">
@@ -458,6 +698,7 @@ function App() {
             width="100%"
             height="100%"
             type="application/pdf"
+            id="pdfEmbed"
           ></embed>
         ) : (
           <p>PDF non généré</p>
@@ -582,7 +823,6 @@ function App() {
           <div className="params">
             {selectedElementType === "fichier" && (
               <FileUploadForm
-                onPdfFileSelect={handlePdfFileSelect}
                 onCSVFileSelect={handleCSVFileSelect}
               ></FileUploadForm>
             )}
