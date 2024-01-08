@@ -23,6 +23,7 @@ function FileUploadForm(props) {
   const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
+    console.log("selectedFile name : ", selectedFile.name);
 
     if (props.onCSVFileSelect) {
       props.onCSVFileSelect(selectedFile);
@@ -55,11 +56,14 @@ function FileUploadForm(props) {
 
   const handlePdfFileChange = async (event) => {
     const selectedPdfFile = event.target.files[0];
-    if (props.onPdfFileSelect) {
-      props.onPdfFileSelect(selectedPdfFile);
+    if (props.onPDFFileSelect) {
+      props.onPDFFileSelect(selectedPdfFile);
     }
     localStorage.setItem("uploadedPdfFile", JSON.stringify(selectedPdfFile));
     setPdfFile(selectedPdfFile);
+    const pdfFileName = selectedPdfFile.name;
+    console.log("PDF file name:", pdfFileName);
+
     try {
       const formData = new FormData();
       formData.append("pdfFile", selectedPdfFile);
@@ -73,16 +77,14 @@ function FileUploadForm(props) {
         }
       );
       console.log(response.data);
+
+      if (props.onPdfFileNameChange) {
+        props.onPdfFileNameChange(pdfFileName);
+      }
     } catch (error) {
       console.error("Error uploading PDF file:", error);
     }
   };
-
-  /* const handleProjectNameChange = (event) => {
-    const projectName = event.target.value;
-    setProjectName(projectName);
-    localStorage.setItem("projectName", JSON.stringify(projectName));
-  }; */
 
   function cleanXMLTagName(tagName) {
     // Encodez les caractères non valides
@@ -110,7 +112,7 @@ function FileUploadForm(props) {
   };
 
   const convertToXML = (jsonData) => {
-    const root = xmlBuilder.create("Documents");
+    const root = xmlBuilder.create("Documents", { encoding: "UTF-8" });
 
     jsonData.forEach((item) => {
       const doc = root.ele("Document");
@@ -120,6 +122,8 @@ function FileUploadForm(props) {
         doc.ele(cleanKey, item[key]);
       });
     });
+
+    console.log(root.end({ pretty: true }));
 
     return root.end({ pretty: true });
   };
@@ -140,14 +144,6 @@ function FileUploadForm(props) {
 
   return (
     <div className="container">
-      {/* <div className="file-item">
-        <span>Nom du projet</span>
-        <input
-          type="text"
-          value={projectName}
-          onChange={handleProjectNameChange}
-        ></input>
-      </div> */}
       <div className="file-item">
         <span>Ficher données</span>
         <div className="datafile">

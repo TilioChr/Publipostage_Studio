@@ -30,21 +30,26 @@ function App() {
   const [csvLength, setCsvLength] = useState(1); //Nombre de lignes du fichier csv
   const [csvColumn] = useState([]); //Nom des premieres colonnes du fichier csv
   const [csvData, setCsvData] = useState([]); //Données du fichier csv
+  const [dataFileName, setDataFileName] = useState(""); //Nom du fichier csv
+  const [pdfFileName, setPdfFileName] = useState(""); //Nom du fichier pdf
   const [isLoading, setIsLoading] = useState(false); //Etat de chargement de la generation du pdf
   const [pdfUrl, setPdfUrl] = useState(""); //URL du pdf généré
   const [pdfBlob, setPdfBlob] = useState(""); //PDF généré
   const [selectedElementType, setSelectedElementType] = useState(null); //Type d'élément sélectionné
   const [windowSelect, setWindowSelect] = useState("composition"); //Etat de la fenetre de composition
+  const [showModal, setShowModal] = useState(false); //Etat de la fenetre de composition
   //#endregion STATES
 
-  const handleDashboard = async () => {
+  const handleRefreshDashboard = async () => {
     const response = await axios.get("http://localhost:3001/dashboard");
     setProjectItems(response.data);
+    console.log("projectItems: ", response.data);
   };
 
   const handleCSVFileSelect = (CSVFile) => {
     console.log("CSV file selected:", CSVFile);
-
+    setDataFileName(CSVFile.name);
+    console.log("dataFileName: ", dataFileName);
     Papa.parse(CSVFile, {
       complete: function (results) {
         csvColumn.push(results.data[0]);
@@ -62,8 +67,12 @@ function App() {
     });
   }; //parsing du csv à sa selection pour les nom de column dans textItem
 
+  const handlePDFFileSelect = (pdfFile) => {
+    setPdfFileName(pdfFile);
+  }; //parsing du pdf à sa selection
+
   useEffect(() => {
-    handleDashboard();
+    handleRefreshDashboard();
     const handleBeforeUnload = async () => {
       await axios.post("http://localhost:3001/unload", {
         message: "unload",
@@ -80,13 +89,24 @@ function App() {
   // Genere via Impress
   const handleRunExecutable = async () => {
     const response = await axios.get("http://localhost:3001/deleteContent"); //reset du dff
-    console.log("deleteContent : ", response.data);
+    console.log("INFO reset dff: ", response.data);
 
     const urlBackend = "http://localhost:3001/completDFF"; //chemin vers la fonction backend
 
     //add text
     for (let i = 0; i < textInfos.length; i++) {
       const element = textInfos[i];
+      if (element.textValeur) {
+        if (element.textValeur.includes("|")) {
+          element.textValeur = element.textValeur.replace(
+            /\|([^|]*)\|/g,
+            '<xsl:value-of select="$1"/>'
+          );
+        }
+        if (element.textValeur.includes("&eacute;")) {
+          element.textValeur = element.textValeur.replace(/&eacute;/g, "é");
+        }
+      }
       const formatElement =
         '<div style="position:absolute;top:' +
         element.textY +
@@ -99,7 +119,7 @@ function App() {
         "</div>";
       const textJson = { type: "text", message: formatElement };
       const response = await axios.post(urlBackend, textJson);
-      console.log("text : ", response.data);
+      console.log("INFO texte : ", response.data);
     }
 
     //add image
@@ -112,7 +132,7 @@ function App() {
         imageY: element.imageY,
         imageSize: element.imageSize,
       });
-      console.log("image : ", response.data);
+      console.log("INFO image : ", response.data);
     }
 
     //add barcode
@@ -131,7 +151,7 @@ function App() {
           barcodeSizeX: element.barcodeSizeX,
           barcodeSizeY: element.barcodeSizeY,
         });
-        console.log("barcode : ", response.data);
+        console.log("INFO : ", response.data);
       } else {
         // Si c'est un code-barres
         const barcodeCanvas = document.createElement("canvas"); // Crée un canvas
@@ -147,7 +167,7 @@ function App() {
           barcodeSizeX: element.barcodeSizeX,
           barcodeSizeY: element.barcodeSizeY,
         });
-        console.log("barcode : ", response.data);
+        console.log("INFO barcode : ", response.data);
       }
     }
 
@@ -158,10 +178,18 @@ function App() {
       const addressLines = [];
       structureSections.forEach((section) => {
         const parts = section.split("-");
-        const line = parts
-          .map((part) => element["adresse" + part.trim()])
-          .join("");
-        addressLines.push(line);
+        console.log("parts: ", parts);
+        const formattedLine = parts.map(
+          (part) => element["adresse" + part.trim()]
+        );
+        console.log("formattedLine: ", formattedLine);
+
+        formattedLine.forEach((line) => {
+          const formattedLine = `<xsl:value-of select="${line}"/>`;
+          console.log("line: ", formattedLine);
+          addressLines.push(formattedLine);
+        });
+        addressLines.push("<br></br>");
       });
       const formatElement =
         '<div style="position:absolute; font-size:' +
@@ -172,12 +200,12 @@ function App() {
         element.adresseX +
         'mm;width:210mm">' +
         "<span>" +
-        addressLines.join("<br></br>") +
+        addressLines.join(" ") +
         "</span>" +
         "</div>";
       const adresseJson = { type: "text", message: formatElement };
       const response = await axios.post(urlBackend, adresseJson);
-      console.log("adresse : ", response.data);
+      console.log("INFO adresse : ", response.data);
     }
 
     //generation et affichage du pdf
@@ -199,12 +227,9 @@ function App() {
       const url = URL.createObjectURL(pdfBlob);
 
       setPdfUrl(url);
-
-      console.log("pdfBlob : ", pdfBlob);
-
-      console.log("pdfUrl : ", pdfUrl);
     } catch (error) {
       console.error("Erreur lors de la récupération du fichier PDF", error);
+      setIsLoading(false);
     }
   };
 
@@ -236,11 +261,14 @@ function App() {
     }
   };
 
-  async function sauvegarderDonnees() {
+  const saveProject = async () => {
     var projectName = prompt("Entrez le nom du projet");
+    console.log("csvData: ", csvData);
     projectName = projectName.replace(/ /g, "_");
     projectName = projectName + ".json";
     console.log("projectName: ", projectName);
+
+    const attachedPDF = pdfFileName ? pdfFileName.name : "";
 
     // Récupérer l'URL de l'image de preview
     const base64Preview = await screenshot();
@@ -251,6 +279,8 @@ function App() {
       codeBarre: barcodeInfos,
       adresse: adresseInfos,
       preview: base64Preview,
+      dataFileName: dataFileName,
+      attachedPDF: attachedPDF,
     };
     // Convertir l'objet en format JSON
     var donneesJSON = JSON.stringify(donneesAEnregistrer);
@@ -277,14 +307,19 @@ function App() {
       });
 
     setTimeout(() => {
-      handleDashboard();
+      handleRefreshDashboard();
     }, 1000);
     console.log("dashboard updated");
-  }
+  };
 
   const loadProject = (projectName) => {
     console.log("Loading Project...");
     localStorage.clear();
+    fetch("http://localhost:3001/unloadPdf", {
+      method: "GET",
+    });
+    setDataFileName("");
+    console.log("/!/ local storage cleared /!/");
     console.log("projectName: ", projectName);
     fetch("http://localhost:3001/projectLoad", {
       method: "POST",
@@ -405,8 +440,25 @@ function App() {
         );
 
         console.log("Project data loaded:", data);
-        handleDashboard();
-        alert("Projet chargé avec succès");
+        setPdfUrl("");
+        setShowModal(false);
+        handleRefreshDashboard();
+
+        if (data.dataFileName && data.attachedPDF) {
+          alert(
+            `⚠️ Attention, les fichiers suivant sont utilisé pour ce projet, n'oubliez pas de les charger avant de générer le PDF.\n➡️ ${data.dataFileName} \n➡️ ${data.attachedPDF}\n\n✅Projet chargé avec succès`
+          );
+        } else if (data.dataFileName && !data.attachedPDF) {
+          alert(
+            `⚠️ Attention, le fichier suivant est utilisé pour ce projet, n'oubliez pas de le charger avant de générer le PDF.\n➡️ ${data.dataFileName}\n\n✅Projet chargé avec succès`
+          );
+        } else if (data.attachedPDF && !data.dataFileName) {
+          alert(
+            `⚠️ Attention, le fichier suivant est utilisé pour ce projet, n'oubliez pas de le charger avant de générer le PDF.\n➡️ ${data.attachedPDF}\n\n✅Projet chargé avec succès`
+          );
+        } else {
+          alert("✅ Projet chargé avec succès");
+        }
       })
       .catch((error) => {
         console.error("Error loading project data:", error);
@@ -425,7 +477,7 @@ function App() {
     })
       .then((data) => {
         console.log("Project data deleted:", data);
-        handleDashboard();
+        handleRefreshDashboard();
         alert("Projet supprimé avec succès");
       })
       .catch((error) => {
@@ -658,7 +710,11 @@ function App() {
           <span className="title-item">PUBLIPOSTAGE STUDIO</span>
         </div>
         <div className="categories">
-          <Modal buttonText="DASHBOARD">
+          <Modal
+            buttonText="DASHBOARD"
+            showModal={showModal}
+            setShowModal={setShowModal}
+          >
             <span className="modalTitle">DASHBOARD</span>
             <div className="dashboard">
               {projectItems.map((projectItem) => {
@@ -666,6 +722,8 @@ function App() {
                   <ProjectItem
                     projectName={projectItem.name}
                     projectImage={projectItem.preview}
+                    attachedData={projectItem.attachedData}
+                    attachedPDF={projectItem.attachedPDF}
                     onLoadButtonClick={loadProject}
                     onDeleteButtonClick={deleteProject}
                   ></ProjectItem>
@@ -685,9 +743,7 @@ function App() {
             <ButtonCustom onClick={handleRunExecutable}>EXECUTER</ButtonCustom>
           </div>
           <div className="submit">
-            <ButtonCustom onClick={sauvegarderDonnees}>
-              SAUVEGARDER
-            </ButtonCustom>
+            <ButtonCustom onClick={saveProject}>SAUVEGARDER</ButtonCustom>
           </div>
         </div>
       </div>
@@ -824,6 +880,7 @@ function App() {
             {selectedElementType === "fichier" && (
               <FileUploadForm
                 onCSVFileSelect={handleCSVFileSelect}
+                onPDFFileSelect={handlePDFFileSelect}
               ></FileUploadForm>
             )}
             {selectedElementType === "image" && imageItems}

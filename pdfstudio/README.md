@@ -1,73 +1,59 @@
 # Publipostage Studio
 
-Publipostage Studio is a web application that allows users to generate personalized PDF documents using templates and data from CSV files. The application is built using React.
+Bienvenue dans **Publipostage Studio**, une application React innovante utilisant le moteur Impress pour simplifier la création rapide de documents PDF personnalisés à partir de fichiers XML ou CSV. Cette interface conviviale offre une solution efficace pour générer en masse des documents personnalisés en un temps record.
 
-## Features
+## Installation
 
-- **File Upload:** Users can upload both PDF and CSV files. The PDF file serves as a base, and the CSV file provides data for placeholders in the template.
+Suivez ces étapes simples pour installer et exécuter Publipostage Studio sur votre machine locale :
 
-- **Item Management:**
+### Frontend
 
-  - _Images:_ Users can add image items with customizable positions and sizes.
-  - _Text:_ Text items can be added with adjustable positions, sizes, and dynamic content from the CSV file.
-  - _Barcodes and QR Codes:_ Barcode items are supported, including QR codes, with customizable types and values.
-  - _Addresses:_ Users can include address items with gender, name, address lines, and more.
+1. Clonez le frontend dans le répertoire de votre choix :
 
-- **PDF Generation:** The application dynamically generates a PDF document based on the provided template, replacing placeholders with data from the CSV file.
+```
+git clone <lien-du-repo-frontend>
+cd pdfstudio
+```
 
-## Usage
+2. Installez les dépendances nécessaires en utilisant la commande suivante :
 
-1. **File Upload:**
+```
+npm install --force
+```
 
-   - Click on the "FICHER" button to upload PDF and CSV files.
-   - The PDF file serves as the template, and the CSV file provides data for placeholders.
+Assurez-vous d'être dans le répertoire "pdfstudio".
 
-2. **Item Management:**
+3. Lancez le frontend en utilisant la commande suivante :
 
-   - Use the modals for managing different types of items: Image, Barcode, Address, Text, etc.
-   - Add, update, or delete items based on your requirements.
+```
+npm run start
+```
 
-3. **PDF Generation:**
+### Backend
 
-   - Click the "GÉNÉRER" button to generate the PDF.
-   - The application will replace placeholders in the template with data from the CSV file and create a personalized PDF document.
+1. Clonez le backend dans un autre répertoire de votre choix :
 
-4. **Workspace Display:**
-   - The generated PDF will be displayed in the workspace area.
+```
+git clone <lien-du-repo-backend>
+cd Backend
+```
 
-## Getting Started
+2. Installez les dépendances nécessaires en utilisant la commande suivante :
 
-1. **Clone the Repository:**
+```
+npm install
+```
 
-   ```
-   git clone https://github.com/your-username/publipostage-studio.git
-   cd publipostage-studio
-   ```
+Aucun besoin d'utiliser --force cette fois.
 
-2. **Install Dependencies:**
+3. Si aucune erreur ne s'est produite pendant l'installation, lancez le backend avec la commande suivante :
 
-   ```
-   npm install
-   ```
+```
+node server
+```
 
-3. **Run the Application:**
-   ```
-   npm start
-   ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+Félicitations ! Vous avez maintenant Publipostage Studio installé et en cours d'exécution sur votre machine. Accédez à l'interface via votre navigateur et commencez à créer des documents PDF personnalisés de manière rapide et efficace.
 
-## Dependencies
+---
 
-- React: [https://reactjs.org/](https://reactjs.org/)
-- jsPDF: [https://github.com/eKoopmans/pdfmake](https://github.com/eKoopmans/pdfmake)
-- jsBarcode: [https://lindell.me/JsBarcode/](https://lindell.me/JsBarcode/)
-- QRCode: [https://github.com/soldair/node-qrcode](https://github.com/soldair/node-qrcode)
-- PapaParse: [https://www.papaparse.com/](https://www.papaparse.com/)
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+Note : Assurez-vous d'avoir Node.js et npm installés sur votre machine avant d'effectuer ces étapes.
