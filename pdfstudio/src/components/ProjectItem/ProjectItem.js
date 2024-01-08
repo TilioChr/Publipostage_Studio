@@ -42,10 +42,30 @@ function ProjectItem(props) {
         <img src={props.projectImage} alt={`Project: ${props.projectName}`} />
         {isHovered && (
           <>
-            <button className="loadButton" onClick={handleLoadButtonClick}>
+            <button
+              className="loadButton"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "Êtes-vous sûr de vouloir charger ce projet ?\nCette action écrasera vos données non sauvegarder !"
+                  )
+                )
+                  handleLoadButtonClick();
+              }}
+            >
               Load
             </button>
-            <button className="deleteButton" onClick={handleDeleteButtonClick}>
+            <button
+              className="deleteButton"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "🗑️ Êtes-vous sûr de vouloir supprimer ce projet ?\n🚨 Cette action est irréversible !"
+                  )
+                )
+                  handleDeleteButtonClick();
+              }}
+            >
               Delete
             </button>
           </>

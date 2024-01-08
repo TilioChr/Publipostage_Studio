@@ -43,8 +43,7 @@ function App() {
   const handleRefreshDashboard = async () => {
     const response = await axios.get("http://localhost:3001/dashboard");
     setProjectItems(response.data);
-    console.log("projectItems: ", response.data);
-  };
+  }; //mise à jour du dashboard
 
   const handleCSVFileSelect = (CSVFile) => {
     console.log("CSV file selected:", CSVFile);
@@ -86,13 +85,11 @@ function App() {
     };
   }, [csvData, csvLength]); // mise à jour de csvLength et csvData
 
-  // Genere via Impress
   const handleRunExecutable = async () => {
     const response = await axios.get("http://localhost:3001/deleteContent"); //reset du dff
     console.log("INFO reset dff: ", response.data);
-
     const urlBackend = "http://localhost:3001/completDFF"; //chemin vers la fonction backend
-
+    setShowModal(false); // ferme le dashboard
     //add text
     for (let i = 0; i < textInfos.length; i++) {
       const element = textInfos[i];
@@ -231,14 +228,14 @@ function App() {
       console.error("Erreur lors de la récupération du fichier PDF", error);
       setIsLoading(false);
     }
-  };
+  }; //fonction de génération du pdf
 
   const handleElementTypeSelect = (elementType) => {
     setSelectedElementType(elementType);
-    console.log("elementType: ", elementType);
   }; //fonction de gestion du type d'élément sélectionné
 
   const handleWindowSelect = (windowType) => {
+    setShowModal(false);
     setWindowSelect(windowType);
   }; //fonction de gestion de la fenetre de composition
 
@@ -254,20 +251,19 @@ function App() {
       canvas.width = viewport.width;
       await page.render({ canvasContext: context, viewport: viewport }).promise;
       const base64Preview = canvas.toDataURL();
-      console.log("screenshotted successfully");
       return base64Preview;
     } catch (error) {
       console.error("Error:", error);
     }
-  };
+  }; //fonction de capture d'écran du pdf
 
   const saveProject = async () => {
     var projectName = prompt("Entrez le nom du projet");
-    console.log("csvData: ", csvData);
+    if (!projectName) {
+      return;
+    }
     projectName = projectName.replace(/ /g, "_");
     projectName = projectName + ".json";
-    console.log("projectName: ", projectName);
-
     const attachedPDF = pdfFileName ? pdfFileName.name : "";
 
     // Récupérer l'URL de l'image de preview
@@ -309,8 +305,7 @@ function App() {
     setTimeout(() => {
       handleRefreshDashboard();
     }, 1000);
-    console.log("dashboard updated");
-  };
+  }; //fonction de sauvegarde du projet
 
   const loadProject = (projectName) => {
     console.log("Loading Project...");
@@ -318,6 +313,10 @@ function App() {
     fetch("http://localhost:3001/unloadPdf", {
       method: "GET",
     });
+    fetch("http://localhost:3001/unloadXML", {
+      method: "GET",
+    });
+    setSelectedElementType("other1");
     setDataFileName("");
     console.log("/!/ local storage cleared /!/");
     console.log("projectName: ", projectName);
@@ -441,6 +440,7 @@ function App() {
 
         console.log("Project data loaded:", data);
         setPdfUrl("");
+        setSelectedElementType("fichier");
         setShowModal(false);
         handleRefreshDashboard();
 
@@ -463,7 +463,7 @@ function App() {
       .catch((error) => {
         console.error("Error loading project data:", error);
       });
-  };
+  }; //fonction de chargement du projet
 
   const deleteProject = (projectName) => {
     console.log("Deleting Project...");
@@ -483,7 +483,7 @@ function App() {
       .catch((error) => {
         console.error("Error deleting project data:", error);
       });
-  };
+  }; //fonction de suppression du projet
 
   //#region ITEMS
   //--- IMAGE ---
@@ -757,7 +757,12 @@ function App() {
             id="pdfEmbed"
           ></embed>
         ) : (
-          <p>PDF non généré</p>
+          <>
+            <div className="noPdf">
+              <p>PDF non généré</p>
+            </div>
+            <div className="verticalSeparator"></div>
+          </>
         )}
       </div>
       {windowSelect === "dashboard" && <div className="options"></div>}
@@ -859,7 +864,7 @@ function App() {
               </div>
               {/* Other1 */}
               <div className="elements-line-button">
-                <ButtonCustom onClick={() => handleElementTypeSelect("other2")}>
+                <ButtonCustom onClick={() => handleElementTypeSelect("other1")}>
                   <div>Other1</div>
 
                   <svg
@@ -905,7 +910,9 @@ function App() {
       )}
       {windowSelect === "enrichir" && (
         <div className="options">
-          <div>ENRICHIR</div>
+          <div className="enrichir">
+            <span>Work in progress...</span>
+          </div>
         </div>
       )}
     </div>

@@ -5,7 +5,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 10%;
+  gap: 20%;
   color: rgb(219, 219, 219);
 }
 
@@ -21,6 +21,17 @@
   gap: 10px;
   width: 80%;
   align-items: center;
+}
+
+.file-item-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.file-item-name {
+  font-size: 1rem;
+  font-weight: 400;
+  margin-bottom: 0.5em;
 }
 
 .valid-icon {

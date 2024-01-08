@@ -38,6 +38,7 @@
   user-select: none;
   opacity: 1;
   background-color: black;
+  border-radius: 5px;
 }
 
 .loadButton,

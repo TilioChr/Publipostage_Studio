@@ -71,7 +71,22 @@
 }
 
 .workspace p {
-  color: rgb(233, 233, 233);
+  color: rgb(185, 185, 185);
+}
+
+.noPdf {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  background-color: #333333;
+}
+
+.verticalSeparator {
+  background-color: #2c2c2c;
+  width: 1vw;
+  height: 100%;
 }
 
 .options {
@@ -164,6 +179,16 @@ select {
   margin-right: 10vw;
   width: 50px;
   height: 50px;
+}
+
+.enrichir {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgb(185, 185, 185);
 }
 
 @font-face {
